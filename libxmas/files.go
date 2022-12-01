@@ -32,6 +32,24 @@ func ReadFileAsInt64Slice(filePath string) ([]int64, error) {
 	return ToInt64s(inputLines)
 }
 
+func ReadFileAsBinaryUInt64Slice(filePath string) ([]uint64, error) {
+	inputLines, err := ReadFileToLines(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return BinaryStringToUint64s(inputLines)
+}
+
+func ReadFileAsBitAbstractionUInt64Slice(filePath, zeroVal, oneVal string) ([]uint64, error) {
+	inputLines, err := ReadFileToLines(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return BitAbstractionToUint64s(inputLines, zeroVal, oneVal)
+}
+
 func ReadFileAsTokenizedStringSlice(filePath string) ([][]string, error) {
 	inputLines, err := ReadFileToLines(filePath)
 	if err != nil {

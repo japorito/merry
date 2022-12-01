@@ -33,6 +33,31 @@ func ToInt64s(input []string) ([]int64, error) {
 	return output, nil
 }
 
+func BinaryStringToUint64s(input []string) ([]uint64, error) {
+	var output []uint64
+	for lineIdx, inputLine := range input {
+		parsedNum, err := strconv.ParseUint(inputLine, 2, 64)
+		if err != nil {
+			fmt.Printf("Encountered error parsing int at line: %d\n", lineIdx)
+
+			return nil, err
+		}
+
+		output = append(output, parsedNum)
+	}
+
+	return output, nil
+}
+
+func BitAbstractionToUint64s(input []string, zeroVal, oneVal string) ([]uint64, error) {
+	for idx := range input {
+		input[idx] = strings.ReplaceAll(input[idx], zeroVal, "0")
+		input[idx] = strings.ReplaceAll(input[idx], oneVal, "1")
+	}
+
+	return BinaryStringToUint64s(input)
+}
+
 func ToBools(input []string) ([][]bool, error) {
 	return CharToBools(input, '0', '1')
 }
