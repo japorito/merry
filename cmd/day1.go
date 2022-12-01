@@ -10,17 +10,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func calculateElfCalories(input [][]int64) []int64 {
+	var calories []int64
+
+	for _, elf := range input {
+		var sum int64 = 0
+		for _, snack := range elf {
+			sum = sum + snack
+		}
+
+		calories = append(calories, sum)
+	}
+
+	return calories
+}
+
 // day1Cmd represents the day1 command
 var day1Cmd = &cobra.Command{
-	Use:   "day1",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.ExactArgs(1),
+	Use:   "day1 path/to/input/file",
+	Short: "Advent of Code Day 1",
+	Long:  `Advent of Code Day 1: Elf Calories`,
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var runall bool = Part == "*"
 
@@ -30,26 +40,17 @@ to quickly create a Cobra application.`,
 		}
 		fmt.Printf("%d input blocks read.\n", len(input))
 
+		calories := calculateElfCalories(input)
+		xmas.SortInt64Desc(calories)
+
 		if runall || Part == "1" {
 			fmt.Println("Part 1 running...")
-
-			var maxSum int64 = 0
-			for _, elf := range input {
-				var sum int64 = 0
-				for _, snack := range elf {
-					sum = sum + snack
-				}
-
-				if sum > maxSum {
-					maxSum = sum
-				}
-			}
-
-			fmt.Printf("Answer 1: %d\n", maxSum)
+			fmt.Printf("Answer 1: %d\n", calories[0])
 		}
 
 		if runall || Part == "2" {
 			fmt.Println("Part 2 running...")
+			fmt.Printf("Answer 2: %d\n", xmas.SumInt64(calories[:3]))
 		}
 
 		xmas.PrintHolidayMessage()
@@ -60,14 +61,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(day1Cmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// day1Cmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// day1Cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
