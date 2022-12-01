@@ -19,14 +19,12 @@ very simple outline that can be used for
 future (real) days. Requires a filename
 argument to process.`,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		var runall bool = Part == "*"
 
 		input, err := xmas.ReadFileAsInt64Slice(args[0])
 		if err != nil {
-			fmt.Println("Failed to read file.")
-
-			return
+			return err
 		}
 		fmt.Printf("%d input lines read.\n", len(input))
 
@@ -39,6 +37,8 @@ argument to process.`,
 		}
 
 		xmas.PrintHolidayMessage()
+
+		return nil
 	},
 }
 
