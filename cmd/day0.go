@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	xmas "github.com/japorito/merry/libxmas"
 	"github.com/spf13/cobra"
@@ -20,6 +21,7 @@ future (real) days. Requires a filename
 argument to process.`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		start := time.Now()
 		var runall bool = Part == "*"
 
 		input, err := xmas.ReadFileAsInt64Slice(args[0])
@@ -36,7 +38,7 @@ argument to process.`,
 			fmt.Println("Part 2 running...")
 		}
 
-		xmas.PrintHolidayMessage()
+		xmas.PrintHolidayMessage(time.Since(start))
 
 		return nil
 	},

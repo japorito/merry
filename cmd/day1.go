@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	xmas "github.com/japorito/merry/libxmas"
 	"github.com/spf13/cobra"
@@ -32,28 +33,29 @@ var day1Cmd = &cobra.Command{
 	Long:  `Advent of Code Day 1: Elf Calories`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		start := time.Now()
 		var runall bool = Part == "*"
 
 		input, err := xmas.ReadFileToInt64SliceBlocks(args[0])
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%d input blocks read.\n", len(input))
+		fmt.Printf("%d elves are carrying snacks.\n", len(input))
 
 		calories := calculateElfCalories(input)
 		xmas.SortInt64Desc(calories)
 
 		if runall || Part == "1" {
 			fmt.Println("Part 1 running...")
-			fmt.Printf("Answer 1: %d\n", calories[0])
+			fmt.Printf("Answer 1: The top snack stash has **%d** calories.\n", calories[0])
 		}
 
 		if runall || Part == "2" {
 			fmt.Println("Part 2 running...")
-			fmt.Printf("Answer 2: %d\n", xmas.SumInt64(calories[:3]))
+			fmt.Printf("Answer 2: The top 3 snack stashes have **%d** total calories.\n", xmas.SumInt64(calories[:3]))
 		}
 
-		xmas.PrintHolidayMessage()
+		xmas.PrintHolidayMessage(time.Since(start))
 
 		return nil
 	},
