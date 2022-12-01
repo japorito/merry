@@ -76,3 +76,19 @@ func BreakToBlocks(input []string) [][]string {
 
 	return output
 }
+
+func BreakToInt64Blocks(input []string) ([][]int64, error) {
+	stringBlocks := BreakToBlocks(input)
+
+	var output [][]int64
+	for _, block := range stringBlocks {
+		iBlock, err := ToInt64s(block)
+		if err != nil {
+			return nil, err
+		}
+
+		output = append(output, iBlock)
+	}
+
+	return output, nil
+}

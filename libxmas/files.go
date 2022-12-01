@@ -58,3 +58,12 @@ func ReadFileToStringSliceBlocks(filePath string) ([][]string, error) {
 
 	return BreakToBlocks(inputLines), nil
 }
+
+func ReadFileToInt64SliceBlocks(filePath string) ([][]int64, error) {
+	inputLines, err := ReadFileToLines(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return BreakToInt64Blocks(inputLines)
+}
