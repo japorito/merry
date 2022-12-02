@@ -11,30 +11,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func makePointsSlice(length int) [][]int32 {
-	return [][]int32{make([]int32, length), make([]int32, length)}
-}
-
 func getWinningMovePoints(opponentPts int32) int32 {
-	winningPoints := opponentPts + 1
-	if winningPoints == 4 {
-		winningPoints = 1
-	}
-
-	return winningPoints
+	return (opponentPts % 3) + 1 // 1 "Rock" beats 3 "Scissors"
 }
 
 func roShamBo(player1, player2 int32) (int32, int32) {
-	if player1 == player2 { // draw
-		return 3, 3
-	}
+	const DrawPoints, WinPoints, LosePoints int32 = 3, 6, 0
 
-	if player1 == getWinningMovePoints(player2) {
-		return 6, 0
+	switch player1 {
+	case player2:
+		return DrawPoints + player1, DrawPoints + player2
+	case getWinningMovePoints(player2):
+		return WinPoints + player1, LosePoints + player2
+	default:
+		return LosePoints + player1, WinPoints + player2
 	}
-
-	//loss
-	return 0, 6
 }
 
 func movePointCalculator(move string, oneVal rune) int32 {
@@ -43,26 +34,16 @@ func movePointCalculator(move string, oneVal rune) int32 {
 	return []rune(move)[0] - zeroVal
 }
 
-func cipherToPoints(cipher [][]string) [][]int32 {
-	output := makePointsSlice(len(cipher))
+func misunderstoodCipherToPoints(cipher [][]string) int32 {
+	pts := makePointsSlice(len(cipher))
 	for idx, game := range cipher {
-		output[0][idx] = movePointCalculator(game[0], 'A')
-		output[1][idx] = movePointCalculator(game[1], 'X')
+		pts[0][idx], pts[1][idx] = roShamBo(movePointCalculator(game[0], 'A'), movePointCalculator(game[1], 'X'))
 	}
 
-	return output
+	return sumInt32(pts[1])
 }
 
-func sumInt32(input []int32) int32 {
-	sum := int32(0)
-	for _, addend := range input {
-		sum = sum + addend
-	}
-
-	return sum
-}
-
-func cipherToRoundScore(cipher [][]string) []int32 {
+func cipherToPoints(cipher [][]string) int32 {
 	const Lose, Draw, Win string = "X", "Y", "Z"
 
 	roundScores := make([]int32, len(cipher))
@@ -75,21 +56,34 @@ func cipherToRoundScore(cipher [][]string) []int32 {
 		case Lose:
 			score := movePointCalculator(game[0], 'A') - 1
 			if score == 0 {
-				score = 3
+				score = 3 // 1 "Rock" beats 3 "Scissors"
 			}
 
 			roundScores[i] = score
 		}
 	}
 
-	return roundScores
+	return sumInt32(roundScores)
+}
+
+func sumInt32(input []int32) int32 {
+	sum := int32(0)
+	for _, addend := range input {
+		sum += addend
+	}
+
+	return sum
+}
+
+func makePointsSlice(length int) [][]int32 {
+	return [][]int32{make([]int32, length), make([]int32, length)}
 }
 
 // day2Cmd represents the day2 command
 var day2Cmd = &cobra.Command{
 	Use:   "day2 path/to/input/file",
 	Short: "Advent of Code Day 2",
-	Long:  `Advent of Code Day 2: Elf Calories`,
+	Long:  `Advent of Code Day 2: Rock Paper Scissors Tournament`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		start := time.Now()
@@ -103,27 +97,12 @@ var day2Cmd = &cobra.Command{
 
 		if runall || Part == "1" {
 			fmt.Println("Part 1 running...")
-
-			movePoints := cipherToPoints(input)
-
-			finalPoints := makePointsSlice(len(movePoints[0]))
-			for i := 0; i < len(movePoints[0]); i++ {
-				finalPoints[0][i], finalPoints[1][i] = roShamBo(movePoints[0][i], movePoints[1][i])
-
-				finalPoints[0][i] = finalPoints[0][i] + movePoints[0][i]
-				finalPoints[1][i] = finalPoints[1][i] + movePoints[1][i]
-			}
-
-			myScore := sumInt32(finalPoints[1])
-
-			fmt.Printf("My rock, paper, scissors score following the cipher would be **%d**.\n", myScore)
+			fmt.Printf("My rock, paper, scissors score following the cipher would be **%d**.\n", misunderstoodCipherToPoints(input))
 		}
 
 		if runall || Part == "2" {
 			fmt.Println("Part 2 running...")
-
-			finalScore := sumInt32(cipherToRoundScore(input))
-			fmt.Printf("My rock, paper, scissor score when I actually understand the cipher would be **%d**.\n", finalScore)
+			fmt.Printf("My rock, paper, scissor score when I actually understand the cipher would be **%d**.\n", cipherToPoints(input))
 		}
 
 		xmas.PrintHolidayMessage(time.Since(start))
