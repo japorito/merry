@@ -17,6 +17,15 @@ func Tokenize(input []string) [][]string {
 	return output
 }
 
+func ToRunes(input []string) [][]rune {
+	output := make([][]rune, len(input))
+	for i, line := range input {
+		output[i] = []rune(line)
+	}
+
+	return output
+}
+
 func ToInt64s(input []string) ([]int64, error) {
 	var output []int64
 	for lineIdx, inputLine := range input {

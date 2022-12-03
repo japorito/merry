@@ -23,6 +23,15 @@ func ReadFileToLines(filePath string) ([]string, error) {
 	return inputLines, nil
 }
 
+func ReadFileToRuneSliceLines(filePath string) ([][]rune, error) {
+	inputLines, err := ReadFileToLines(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return ToRunes(inputLines), nil
+}
+
 func ReadFileAsInt64Slice(filePath string) ([]int64, error) {
 	inputLines, err := ReadFileToLines(filePath)
 	if err != nil {
