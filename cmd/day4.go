@@ -96,7 +96,7 @@ var day4Cmd = &cobra.Command{
 
 		if runall || Part == "2" {
 			fmt.Println("Part 2 running...")
-			fmt.Printf("There are **%d** elf pairs with overlapping cleaning assignments.", countOverlaps(assignmentPairs))
+			fmt.Printf("There are **%d** elf pairs with overlapping cleaning assignments.\n", countOverlaps(assignmentPairs))
 		}
 
 		xmas.PrintHolidayMessage(time.Since(start))
