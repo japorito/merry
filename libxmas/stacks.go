@@ -4,8 +4,8 @@ type Stack[T any] struct {
 	data []T
 }
 
-func (stack *Stack[T]) Push(item T) *Stack[T] {
-	stack.data = append(stack.data, item)
+func (stack *Stack[T]) Push(items ...T) *Stack[T] {
+	stack.data = append(stack.data, items...)
 
 	return stack
 }

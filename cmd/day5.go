@@ -28,7 +28,7 @@ func parseLabels(stacklisting []string) []string {
 	return strings.Fields(labelline)
 }
 
-func parseStacks(labels, stacklisting []string) map[string]xmas.Stack[rune] {
+func parseStacks(labels, stacklisting []string) map[string]*xmas.Stack[rune] {
 	maxstackheight := len(stacklisting) - 1
 
 	labelline := stacklisting[maxstackheight]
@@ -39,17 +39,19 @@ func parseStacks(labels, stacklisting []string) map[string]xmas.Stack[rune] {
 		stackcol[label] = strings.Index(labelline, label)
 	}
 
-	stacks := make(map[string]xmas.Stack[rune], len(labels))
+	stacks := make(map[string]*xmas.Stack[rune], len(labels))
 	for stackname, stackidx := range stackcol {
 		for i := len(stackdescriptions) - 1; i >= 0; i-- {
 			line := stackdescriptions[i]
 			layerdescription := []rune(line)
 
 			if stackidx < len(layerdescription) && layerdescription[stackidx] != ' ' {
-				stack := stacks[stackname]
+				stack, ok := stacks[stackname]
+				if !ok {
+					stack = &xmas.Stack[rune]{}
+					stacks[stackname] = stack
+				}
 				stack.Push(layerdescription[stackidx])
-
-				stacks[stackname] = stack
 			}
 		}
 	}
@@ -67,7 +69,7 @@ func parseInstructions(instructionset []string) []instruction {
 			src:     fields[3],
 			dst:     fields[5],
 		}
-		inst.arg, _ = strconv.Atoi(fields[1])
+		inst.arg, _ = strconv.Atoi(fields[1]) //assuming well-formed input
 
 		instructions[idx] = inst
 	}
@@ -75,35 +77,27 @@ func parseInstructions(instructionset []string) []instruction {
 	return instructions
 }
 
-func applyInstructions(stacks map[string]xmas.Stack[rune], instructions []instruction) {
+func applyInstructions(stacks map[string]*xmas.Stack[rune], instructions []instruction) {
 	for _, inst := range instructions {
 		for i := 0; i < inst.arg; i++ {
 			fromstack := stacks[inst.src]
 			tostack := stacks[inst.dst]
 
 			tostack.Push(fromstack.Pop())
-
-			stacks[inst.src] = fromstack
-			stacks[inst.dst] = tostack
 		}
 	}
 }
 
-func applyInstructionsCrateMove9001(stacks map[string]xmas.Stack[rune], instructions []instruction) {
+func applyInstructionsCrateMove9001(stacks map[string]*xmas.Stack[rune], instructions []instruction) {
 	for _, inst := range instructions {
 		fromstack := stacks[inst.src]
 		tostack := stacks[inst.dst]
 
-		for _, crate := range fromstack.Top(inst.arg) {
-			tostack.Push(crate)
-		}
-
-		stacks[inst.src] = fromstack
-		stacks[inst.dst] = tostack
+		tostack.Push(fromstack.Top(inst.arg)...)
 	}
 }
 
-func printTop(intro string, labels []string, stacks map[string]xmas.Stack[rune]) {
+func printTop(intro string, labels []string, stacks map[string]*xmas.Stack[rune]) {
 	fmt.Print(intro, "**")
 	for _, label := range labels {
 		stack := stacks[label]
