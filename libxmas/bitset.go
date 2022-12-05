@@ -1,3 +1,8 @@
+/*
+This is a bad implementation that you should not use, but it is sufficient for my purposes.
+Should work fine for small, positive ints.
+*/
+
 package xmas
 
 import (
