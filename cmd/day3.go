@@ -32,35 +32,36 @@ func runeToPriority(input [][]rune) [][]int64 {
 }
 
 // find items repeated in all slices
-func repeatedPriorities(itemlists [][]int64) []int64 {
-	repeatedItems := make(map[int64]int64)
-	for _, item := range itemlists[0] {
-		repeatedItems[item] += 1
+func repeatedPriorities(itemlists ...xmas.BitSet) []int64 {
+	repeatedItems := itemlists[0]
+
+	repeatedItems = repeatedItems.Intersect(itemlists[1:]...)
+
+	return repeatedItems.Members()
+}
+
+func createSet(items []int64) xmas.BitSet {
+	set := xmas.BitSet{}
+	for _, item := range items {
+		set.On(item)
 	}
 
-	for _, itemlist := range itemlists[1:] {
-		dupePriorities := make(map[int64]int64)
-		for _, item := range itemlist {
-			_, ok := repeatedItems[item]
-			if ok {
-				dupePriorities[item] += 1
-			}
-		}
+	return set
+}
 
-		repeatedItems = dupePriorities
+func createSets(itemgroups ...[]int64) []xmas.BitSet {
+	sets := make([]xmas.BitSet, 0, len(itemgroups))
+
+	for _, itemgroup := range itemgroups {
+		sets = append(sets, createSet(itemgroup))
 	}
 
-	var dedupedDupes []int64
-	for key := range repeatedItems {
-		dedupedDupes = append(dedupedDupes, key)
-	}
-
-	return dedupedDupes
+	return sets
 }
 
 func compartmentRepeatedPriorities(rucksack []int64) []int64 {
 	compartmentCapacity := len(rucksack) / 2
-	return repeatedPriorities([][]int64{rucksack[:compartmentCapacity], rucksack[compartmentCapacity:]})
+	return repeatedPriorities(createSets(rucksack[:compartmentCapacity], rucksack[compartmentCapacity:])...)
 }
 
 func rucksackErrors(allRucksacks [][]int64) []int64 {
@@ -76,7 +77,7 @@ func findBadges(allRucksacks [][]int64) []int64 {
 	var badges []int64
 
 	for i := 3; i <= len(allRucksacks); i += 3 {
-		badges = append(badges, repeatedPriorities(allRucksacks[(i-3):i])...)
+		badges = append(badges, repeatedPriorities(createSets(allRucksacks[(i-3):i]...)...)...)
 	}
 
 	return badges
