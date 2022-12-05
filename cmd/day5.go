@@ -1,5 +1,5 @@
 /*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
+Copyright © 2022 Jacob Saporito
 */
 package cmd
 
@@ -117,7 +117,7 @@ func printTop(intro string, labels []string, stacks map[string]xmas.Stack[rune])
 var day5Cmd = &cobra.Command{
 	Use:   "day5 path/to/input/file",
 	Short: "AoC Day 5",
-	Long:  `Advent of Code Day 5`,
+	Long:  `Advent of Code Day 5: Supply Stacks`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		start := time.Now()

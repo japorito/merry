@@ -71,7 +71,7 @@ func countOverlaps(assignmentPairs [][]int64) int64 {
 var day4Cmd = &cobra.Command{
 	Use:   "day4 path/to/input/file",
 	Short: "AoC Day 4",
-	Long:  `Advent of Code Day 4`,
+	Long:  `Advent of Code Day 4: Camp Cleanup`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		start := time.Now()

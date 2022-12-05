@@ -30,7 +30,7 @@ func calculateElfCalories(input [][]int64) []int64 {
 var day1Cmd = &cobra.Command{
 	Use:   "day1 path/to/input/file",
 	Short: "Advent of Code Day 1",
-	Long:  `Advent of Code Day 1: Elf Calories`,
+	Long:  `Advent of Code Day 1: Calorie Counting`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		start := time.Now()

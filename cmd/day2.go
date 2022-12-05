@@ -83,7 +83,7 @@ func makePointsSlice(length int) [][]int32 {
 var day2Cmd = &cobra.Command{
 	Use:   "day2 path/to/input/file",
 	Short: "Advent of Code Day 2",
-	Long:  `Advent of Code Day 2: Rock Paper Scissors Tournament`,
+	Long:  `Advent of Code Day 2: Rock Paper Scissors`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		start := time.Now()

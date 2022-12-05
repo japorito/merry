@@ -87,7 +87,7 @@ func findBadges(allRucksacks [][]int64) []int64 {
 var day3Cmd = &cobra.Command{
 	Use:   "day3 path/to/input/file",
 	Short: "AoC Day 3",
-	Long:  `Advent of Code Day 3: Needs Title`,
+	Long:  `Advent of Code Day 3: Rucksack Reorganization`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		start := time.Now()
