@@ -97,15 +97,17 @@ func BreakToBlocks(input []string) [][]string {
 	var output [][]string
 	var outputBlock []string
 	for _, inputLine := range input {
-		inputLine = strings.TrimSpace(inputLine)
-
-		if len(inputLine) > 0 {
+		if len(strings.TrimSpace(inputLine)) > 0 {
 			outputBlock = append(outputBlock, inputLine)
 		} else if len(outputBlock) > 0 { // if anything has been read to this block
 			output = append(output, outputBlock)
 
 			outputBlock = make([]string, 0)
 		} // else line is empty but nothing has yet been read. Continue to skip newlines until we read something
+	}
+
+	if len(outputBlock) > 0 {
+		output = append(output, outputBlock)
 	}
 
 	return output
