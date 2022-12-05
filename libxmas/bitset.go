@@ -11,13 +11,18 @@ import (
 
 const bitsetBlockSize = 64
 
-type BitSet struct {
+type Integral interface {
+	~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uint |
+		~int8 | ~int16 | ~int32 | ~int64 | ~int
+}
+
+type BitSet[T Integral] struct {
 	data     []uint64
 	capacity int64
 }
 
-func (bs *BitSet) increaseCapacity(fieldsNeeded int64) *BitSet {
-	bs.capacity = fieldsNeeded / bitsetBlockSize
+func (bs *BitSet[T]) increaseCapacity(fieldsNeeded T) *BitSet[T] {
+	bs.capacity = int64(fieldsNeeded / bitsetBlockSize)
 	if fieldsNeeded%bitsetBlockSize > 0 {
 		bs.capacity += 1
 	}
@@ -30,8 +35,8 @@ func (bs *BitSet) increaseCapacity(fieldsNeeded int64) *BitSet {
 	return bs
 }
 
-func (bs *BitSet) set(idx int64, value bool) *BitSet {
-	block := idx / bitsetBlockSize
+func (bs *BitSet[T]) set(idx T, value bool) *BitSet[T] {
+	block := int64(idx / bitsetBlockSize)
 	bitmask := uint64(1 << (idx % bitsetBlockSize))
 
 	if block >= bs.capacity {
@@ -48,11 +53,11 @@ func (bs *BitSet) set(idx int64, value bool) *BitSet {
 	return bs
 }
 
-func (bs *BitSet) Capacity() int64 {
+func (bs *BitSet[T]) Capacity() int64 {
 	return bs.capacity * bitsetBlockSize
 }
 
-func (bs *BitSet) Size() int64 {
+func (bs *BitSet[T]) Size() int64 {
 	var size int64 = 0
 
 	for _, block := range bs.data {
@@ -62,26 +67,26 @@ func (bs *BitSet) Size() int64 {
 	return size
 }
 
-func (bs *BitSet) On(idx int64) *BitSet {
+func (bs *BitSet[T]) On(idx T) *BitSet[T] {
 	bs.set(idx, true)
 
 	return bs
 }
 
-func (bs *BitSet) Off(idx int64) *BitSet {
+func (bs *BitSet[T]) Off(idx T) *BitSet[T] {
 	bs.set(idx, false)
 
 	return bs
 }
 
-func (bs *BitSet) Has(idx int64) bool {
-	block := idx / bitsetBlockSize
+func (bs *BitSet[T]) Has(idx T) bool {
+	block := int64(idx / bitsetBlockSize)
 	bitmask := uint64(1 << (idx % bitsetBlockSize))
 
 	return block < bs.capacity && (bs.data[block]&bitmask > 0)
 }
 
-func (bs *BitSet) Intersect(others ...BitSet) BitSet {
+func (bs *BitSet[T]) Intersect(others ...BitSet[T]) BitSet[T] {
 	mincapacity := bs.capacity
 
 	for _, other := range others {
@@ -90,7 +95,7 @@ func (bs *BitSet) Intersect(others ...BitSet) BitSet {
 		}
 	}
 
-	intersectedSet := BitSet{
+	intersectedSet := BitSet[T]{
 		data:     make([]uint64, mincapacity),
 		capacity: mincapacity,
 	}
@@ -110,7 +115,7 @@ func (bs *BitSet) Intersect(others ...BitSet) BitSet {
 	return intersectedSet
 }
 
-func (bs *BitSet) Union(others ...BitSet) BitSet {
+func (bs *BitSet[T]) Union(others ...BitSet[T]) BitSet[T] {
 	maxcapacity := bs.capacity
 
 	for _, other := range others {
@@ -119,7 +124,7 @@ func (bs *BitSet) Union(others ...BitSet) BitSet {
 		}
 	}
 
-	unionSet := BitSet{
+	unionSet := BitSet[T]{
 		data:     make([]uint64, maxcapacity),
 		capacity: maxcapacity,
 	}
@@ -139,7 +144,7 @@ func (bs *BitSet) Union(others ...BitSet) BitSet {
 	return unionSet
 }
 
-func (bs *BitSet) Subtract(other BitSet) *BitSet {
+func (bs *BitSet[T]) Subtract(other BitSet[T]) *BitSet[T] {
 	for blockNum := range bs.data {
 		if blockNum > int(other.capacity) {
 			break
@@ -151,7 +156,7 @@ func (bs *BitSet) Subtract(other BitSet) *BitSet {
 	return bs
 }
 
-func (bs *BitSet) Any() bool {
+func (bs *BitSet[T]) Any() bool {
 	for _, block := range bs.data {
 		if block > 0 {
 			return true
@@ -161,12 +166,12 @@ func (bs *BitSet) Any() bool {
 	return false
 }
 
-func (bs *BitSet) Members() []int64 {
-	members := make([]int64, 0, bs.Size())
+func (bs *BitSet[T]) Members() []T {
+	members := make([]T, 0, bs.Size())
 	for blockNum, block := range bs.data {
 		for i := int64(0); i < bitsetBlockSize; i++ {
 			if (block & (1 << i)) > 0 {
-				members = append(members, int64(blockNum)*bitsetBlockSize+i)
+				members = append(members, T(int64(blockNum)*bitsetBlockSize+i))
 			}
 		}
 	}

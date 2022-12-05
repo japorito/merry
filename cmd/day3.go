@@ -32,7 +32,7 @@ func runeToPriority(input [][]rune) [][]int64 {
 }
 
 // find items repeated in all slices
-func repeatedPriorities(itemlists ...xmas.BitSet) []int64 {
+func repeatedPriorities(itemlists ...xmas.BitSet[int64]) []int64 {
 	repeatedItems := itemlists[0]
 
 	repeatedItems = repeatedItems.Intersect(itemlists[1:]...)
@@ -40,8 +40,8 @@ func repeatedPriorities(itemlists ...xmas.BitSet) []int64 {
 	return repeatedItems.Members()
 }
 
-func createSet(items []int64) xmas.BitSet {
-	set := xmas.BitSet{}
+func createSet(items []int64) xmas.BitSet[int64] {
+	set := xmas.BitSet[int64]{}
 	for _, item := range items {
 		set.On(item)
 	}
@@ -49,8 +49,8 @@ func createSet(items []int64) xmas.BitSet {
 	return set
 }
 
-func createSets(itemgroups ...[]int64) []xmas.BitSet {
-	sets := make([]xmas.BitSet, 0, len(itemgroups))
+func createSets(itemgroups ...[]int64) []xmas.BitSet[int64] {
+	sets := make([]xmas.BitSet[int64], 0, len(itemgroups))
 
 	for _, itemgroup := range itemgroups {
 		sets = append(sets, createSet(itemgroup))
