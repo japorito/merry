@@ -35,15 +35,20 @@ func (bs *BitSet[T]) increaseCapacity(fieldsNeeded T) *BitSet[T] {
 	return bs
 }
 
-func (bs *BitSet[T]) set(idx T, value bool) *BitSet[T] {
+func (bs *BitSet[T]) set(idx T, on bool) *BitSet[T] {
 	block := int64(idx / bitsetBlockSize)
 	bitmask := uint64(1 << (idx % bitsetBlockSize))
 
 	if block >= bs.capacity {
+		if !on {
+			// No changes necessary. It's already "off"
+			return bs
+		}
+
 		bs.increaseCapacity(idx)
 	}
 
-	if !value {
+	if !on {
 		bitmask = ^bitmask
 		bs.data[block] = bs.data[block] & bitmask
 	} else {
@@ -177,4 +182,12 @@ func (bs *BitSet[T]) Members() []T {
 	}
 
 	return members
+}
+
+func (bs *BitSet[T]) Clear() *BitSet[T] {
+	for i := range bs.data {
+		bs.data[i] = uint64(0)
+	}
+
+	return bs
 }
