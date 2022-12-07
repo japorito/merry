@@ -10,6 +10,7 @@ import (
 )
 
 const bitsetBlockSize = 64
+const bitsetMaxBlockOffset = bitsetBlockSize - 1
 
 type Integral interface {
 	~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uint |
@@ -17,42 +18,56 @@ type Integral interface {
 }
 
 type BitSet[T Integral] struct {
-	data     []uint64
-	capacity int64
+	data      []uint64
+	capacity  int64
+	zeroBlock int64
 }
 
-func (bs *BitSet[T]) increaseCapacity(fieldsNeeded T) *BitSet[T] {
-	bs.capacity = int64(fieldsNeeded / bitsetBlockSize)
-	if fieldsNeeded%bitsetBlockSize > 0 {
-		bs.capacity += 1
+func (bs *BitSet[T]) blockNumFromIndex(idx T) int64 {
+
+	if idx < 0 {
+		// -1 through -64 should return -1, shift +1 so floor division will work
+		return bs.zeroBlock + (int64(idx+1) / bitsetBlockSize) - 1
 	}
 
-	temp := bs.data
-	bs.data = make([]uint64, bs.capacity)
-
-	copy(bs.data, temp)
-
-	return bs
+	// 0 through 63 should return 0
+	return bs.zeroBlock + (int64(idx) / bitsetBlockSize)
 }
 
-func (bs *BitSet[T]) set(idx T, on bool) *BitSet[T] {
-	block := int64(idx / bitsetBlockSize)
-	bitmask := uint64(1 << (idx % bitsetBlockSize))
-
-	if block >= bs.capacity {
-		if !on {
-			// No changes necessary. It's already "off"
-			return bs
-		}
-
-		bs.increaseCapacity(idx)
+func (bs *BitSet[T]) blockOffsetFromIndex(idx T) int64 {
+	offset := int64(idx) % bitsetBlockSize
+	if idx < 0 {
+		return (bitsetBlockSize + offset) % bitsetBlockSize
 	}
 
-	if !on {
-		bitmask = ^bitmask
-		bs.data[block] = bs.data[block] & bitmask
-	} else {
-		bs.data[block] = bs.data[block] | bitmask
+	return offset
+}
+
+func (bs *BitSet[T]) indexFromBlockAndOffset(blockNum, offset int64) int64 {
+	effectiveBlock := blockNum - bs.zeroBlock
+	minBlockVal := effectiveBlock * bitsetBlockSize
+
+	return minBlockVal + offset
+}
+
+func (bs *BitSet[T]) assureCapacity(idx T) *BitSet[T] {
+	blockNum := bs.blockNumFromIndex(idx)
+	initialCapacity := bs.capacity
+
+	copyBlockOffset := int64(0)
+	if blockNum < 0 {
+		copyBlockOffset = -1 * blockNum
+		bs.capacity = bs.capacity + copyBlockOffset
+		bs.zeroBlock = bs.zeroBlock + copyBlockOffset
+	} else if blockNum >= bs.capacity {
+		bs.capacity = blockNum + 1 // account for 0-indexing
+	}
+
+	if bs.capacity != initialCapacity {
+		temp := bs.data
+		bs.data = make([]uint64, bs.capacity)
+
+		copy(bs.data[copyBlockOffset:], temp)
 	}
 
 	return bs
@@ -73,46 +88,66 @@ func (bs *BitSet[T]) Size() int64 {
 }
 
 func (bs *BitSet[T]) On(idx T) *BitSet[T] {
-	bs.set(idx, true)
+	bs.assureCapacity(idx)
+
+	block := bs.blockNumFromIndex(idx)
+	bitmask := uint64(1 << bs.blockOffsetFromIndex(idx))
+
+	bs.data[block] = bs.data[block] | bitmask
 
 	return bs
 }
 
 func (bs *BitSet[T]) Off(idx T) *BitSet[T] {
-	bs.set(idx, false)
+	block := bs.blockNumFromIndex(idx)
+	bitmask := uint64(1 << bs.blockOffsetFromIndex(idx))
+
+	if block >= bs.capacity || block < 0 {
+		// outside of capacity so implicitly off
+		return bs
+	}
+
+	bitmask = ^bitmask
+	bs.data[block] = bs.data[block] & bitmask
 
 	return bs
 }
 
 func (bs *BitSet[T]) Has(idx T) bool {
-	block := int64(idx / bitsetBlockSize)
-	bitmask := uint64(1 << (idx % bitsetBlockSize))
+	block := bs.blockNumFromIndex(idx)
+	bitmask := uint64(1 << bs.blockOffsetFromIndex(idx))
 
-	return block < bs.capacity && (bs.data[block]&bitmask > 0)
+	return block < bs.capacity &&
+		block >= 0 &&
+		(bs.data[block]&bitmask > 0)
 }
 
 func (bs *BitSet[T]) Intersect(others ...BitSet[T]) BitSet[T] {
-	mincapacity := bs.capacity
+	minNegativeBlocks := bs.zeroBlock
+	minPositiveBlocks := bs.capacity - bs.zeroBlock
 
 	for _, other := range others {
-		if other.capacity < mincapacity {
-			mincapacity = other.capacity
+		otherPositiveBlocks := other.capacity - other.zeroBlock
+		if otherPositiveBlocks < minPositiveBlocks {
+			minPositiveBlocks = otherPositiveBlocks
+		}
+
+		if other.zeroBlock < minNegativeBlocks {
+			minNegativeBlocks = other.zeroBlock
 		}
 	}
 
+	newCapacity := minNegativeBlocks + minPositiveBlocks
 	intersectedSet := BitSet[T]{
-		data:     make([]uint64, mincapacity),
-		capacity: mincapacity,
+		data:      make([]uint64, newCapacity),
+		capacity:  newCapacity,
+		zeroBlock: minNegativeBlocks,
 	}
 
-	copy(intersectedSet.data, bs.data[:mincapacity])
+	copy(intersectedSet.data, bs.data[bs.zeroBlock-minNegativeBlocks:bs.zeroBlock+minPositiveBlocks])
 
 	for _, other := range others {
-		for i, block := range other.data {
-			if i >= int(mincapacity) {
-				break
-			}
-
+		for i, block := range other.data[other.zeroBlock-minNegativeBlocks : other.zeroBlock+minPositiveBlocks] {
 			intersectedSet.data[i] = intersectedSet.data[i] & block
 		}
 	}
@@ -121,28 +156,33 @@ func (bs *BitSet[T]) Intersect(others ...BitSet[T]) BitSet[T] {
 }
 
 func (bs *BitSet[T]) Union(others ...BitSet[T]) BitSet[T] {
-	maxcapacity := bs.capacity
+	maxNegativeBlocks := bs.zeroBlock
+	maxPositiveBlocks := bs.capacity - bs.zeroBlock
 
 	for _, other := range others {
-		if other.capacity > maxcapacity {
-			maxcapacity = other.capacity
+		otherPositiveBlocks := other.capacity - other.zeroBlock
+		if otherPositiveBlocks > maxPositiveBlocks {
+			maxPositiveBlocks = otherPositiveBlocks
+		}
+
+		if other.zeroBlock > maxNegativeBlocks {
+			maxNegativeBlocks = other.zeroBlock
 		}
 	}
 
+	newCapacity := maxNegativeBlocks + maxPositiveBlocks
 	unionSet := BitSet[T]{
-		data:     make([]uint64, maxcapacity),
-		capacity: maxcapacity,
+		data:      make([]uint64, newCapacity),
+		capacity:  newCapacity,
+		zeroBlock: maxNegativeBlocks,
 	}
 
-	copy(unionSet.data, bs.data[:maxcapacity])
+	copy(unionSet.data[unionSet.zeroBlock-bs.zeroBlock:], bs.data)
 
 	for _, other := range others {
+		otherZeroOffset := unionSet.zeroBlock - other.zeroBlock
 		for i, block := range other.data {
-			if i >= int(maxcapacity) {
-				break
-			}
-
-			unionSet.data[i] = unionSet.data[i] | block
+			unionSet.data[otherZeroOffset+int64(i)] = unionSet.data[otherZeroOffset+int64(i)] | block
 		}
 	}
 
@@ -150,12 +190,16 @@ func (bs *BitSet[T]) Union(others ...BitSet[T]) BitSet[T] {
 }
 
 func (bs *BitSet[T]) Subtract(other BitSet[T]) *BitSet[T] {
+	otherOffset := other.zeroBlock - bs.zeroBlock
 	for blockNum := range bs.data {
-		if blockNum > int(other.capacity) {
-			break
-		}
+		otherBlockNum := blockNum + int(otherOffset)
+		if otherBlockNum >= 0 {
+			if otherBlockNum >= int(other.capacity) {
+				break
+			}
 
-		bs.data[blockNum] = bs.data[blockNum] & ^other.data[blockNum]
+			bs.data[blockNum] = bs.data[blockNum] & ^other.data[otherBlockNum]
+		}
 	}
 
 	return bs
@@ -176,7 +220,7 @@ func (bs *BitSet[T]) Members() []T {
 	for blockNum, block := range bs.data {
 		for i := int64(0); i < bitsetBlockSize; i++ {
 			if (block & (1 << i)) > 0 {
-				members = append(members, T(int64(blockNum)*bitsetBlockSize+i))
+				members = append(members, T(bs.indexFromBlockAndOffset(int64(blockNum), i)))
 			}
 		}
 	}
