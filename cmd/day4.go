@@ -12,22 +12,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func parseAssignmentRanges(input []string) ([][]int64, error) {
+func parseAssignmentRanges(input []string) [][]int64 {
 	output := make([][]int64, len(input))
-	var err error
 	for i, assignmentPair := range input {
-		output[i], err =
+		output[i] =
 			xmas.ToInt64s(
 				strings.FieldsFunc(assignmentPair,
 					func(r rune) bool {
 						return r == ',' || r == '-'
 					}))
-		if err != nil {
-			return nil, err
-		}
 	}
 
-	return output, nil
+	return output
 }
 
 func sectionRangeContains(range1, range2 []int64) bool {
@@ -73,35 +69,25 @@ var day4Cmd = &cobra.Command{
 	Short: "AoC Day 4",
 	Long:  `Advent of Code Day 4: Camp Cleanup`,
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		start := time.Now()
-		var runall bool = Part == "*"
+	Run: func(cmd *cobra.Command, args []string) {
+		defer xmas.PrintHolidayMessage(time.Now())
 
-		input, err := xmas.ReadFileToLines(args[0])
-		if err != nil {
-			return err
+		if input := xmas.ReadFileToLines(args[0]); input != nil {
+			fmt.Printf("%d assignment pairs read.\n", len(input))
+
+			assignmentPairs := parseAssignmentRanges(input)
+
+			if Parts.Has(1) {
+				fmt.Println("Part 1 running...")
+				fmt.Printf("There are **%d** elves with cleaning assignments containing their partner's assignments.\n",
+					countCompleteSectionSubsets(assignmentPairs))
+			}
+
+			if Parts.Has(2) {
+				fmt.Println("Part 2 running...")
+				fmt.Printf("There are **%d** elf pairs with overlapping cleaning assignments.\n", countOverlaps(assignmentPairs))
+			}
 		}
-		fmt.Printf("%d assignment pairs read.\n", len(input))
-
-		assignmentPairs, err := parseAssignmentRanges(input)
-		if err != nil {
-			return err
-		}
-
-		if runall || Part == "1" {
-			fmt.Println("Part 1 running...")
-			fmt.Printf("There are **%d** elves with cleaning assignments containing their partner's assignments.\n",
-				countCompleteSectionSubsets(assignmentPairs))
-		}
-
-		if runall || Part == "2" {
-			fmt.Println("Part 2 running...")
-			fmt.Printf("There are **%d** elf pairs with overlapping cleaning assignments.\n", countOverlaps(assignmentPairs))
-		}
-
-		xmas.PrintHolidayMessage(time.Since(start))
-
-		return nil
 	},
 }
 

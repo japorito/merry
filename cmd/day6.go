@@ -34,29 +34,22 @@ var day6Cmd = &cobra.Command{
 	Short: "AoC Day 6",
 	Long:  `Advent of Code Day 6: `,
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		start := time.Now()
-		var runall bool = Part == "*"
+	Run: func(cmd *cobra.Command, args []string) {
+		defer xmas.PrintHolidayMessage(time.Now())
 
-		input, err := xmas.ReadFileToRuneSliceLines(args[0])
-		if err != nil {
-			return err
+		if input := xmas.ReadFileToRuneSliceLines(args[0]); input != nil {
+			fmt.Printf("%d communications datastreams read.\n", len(input))
+
+			if Parts.Has(1) {
+				fmt.Println("Part 1 running...")
+				fmt.Printf("First start-of-packet marker found at position %d.\n", findNUniqueIndex(input[0], 4))
+			}
+
+			if Parts.Has(2) {
+				fmt.Println("Part 2 running...")
+				fmt.Printf("First start-of-message marker found at position %d.\n", findNUniqueIndex(input[0], 14))
+			}
 		}
-		fmt.Printf("%d communications datastreams read.\n", len(input))
-
-		if runall || Part == "1" {
-			fmt.Println("Part 1 running...")
-			fmt.Printf("First start-of-packet marker found at position %d.\n", findNUniqueIndex(input[0], 4))
-		}
-
-		if runall || Part == "2" {
-			fmt.Println("Part 2 running...")
-			fmt.Printf("First start-of-message marker found at position %d.\n", findNUniqueIndex(input[0], 14))
-		}
-
-		xmas.PrintHolidayMessage(time.Since(start))
-
-		return nil
 	},
 }
 

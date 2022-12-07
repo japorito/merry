@@ -85,29 +85,22 @@ var day2Cmd = &cobra.Command{
 	Short: "Advent of Code Day 2",
 	Long:  `Advent of Code Day 2: Rock Paper Scissors`,
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		start := time.Now()
-		var runall bool = Part == "*"
+	Run: func(cmd *cobra.Command, args []string) {
+		defer xmas.PrintHolidayMessage(time.Now())
 
-		input, err := xmas.ReadFileAsTokenizedStringSlice(args[0])
-		if err != nil {
-			return err
+		if input := xmas.ReadFileAsTokenizedStringSlice(args[0]); input != nil {
+			fmt.Printf("%d games of rock, paper, scissors in the cipher.\n", len(input))
+
+			if Parts.Has(1) {
+				fmt.Println("Part 1 running...")
+				fmt.Printf("My rock, paper, scissors score following the cipher would be **%d**.\n", misunderstoodCipherToPoints(input))
+			}
+
+			if Parts.Has(2) {
+				fmt.Println("Part 2 running...")
+				fmt.Printf("My rock, paper, scissor score when I actually understand the cipher would be **%d**.\n", cipherToPoints(input))
+			}
 		}
-		fmt.Printf("%d games of rock, paper, scissors in the cipher.\n", len(input))
-
-		if runall || Part == "1" {
-			fmt.Println("Part 1 running...")
-			fmt.Printf("My rock, paper, scissors score following the cipher would be **%d**.\n", misunderstoodCipherToPoints(input))
-		}
-
-		if runall || Part == "2" {
-			fmt.Println("Part 2 running...")
-			fmt.Printf("My rock, paper, scissor score when I actually understand the cipher would be **%d**.\n", cipherToPoints(input))
-		}
-
-		xmas.PrintHolidayMessage(time.Since(start))
-
-		return nil
 	},
 }
 

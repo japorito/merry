@@ -113,43 +113,36 @@ var day5Cmd = &cobra.Command{
 	Short: "AoC Day 5",
 	Long:  `Advent of Code Day 5: Supply Stacks`,
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		start := time.Now()
-		var runall bool = Part == "*"
+	Run: func(cmd *cobra.Command, args []string) {
+		defer xmas.PrintHolidayMessage(time.Now())
 
-		input, err := xmas.ReadFileToStringSliceBlocks(args[0])
-		if err != nil {
-			return err
+		if input := xmas.ReadFileToStringSliceBlocks(args[0]); input != nil {
+			maxstackheight := len(input[0]) - 1
+			fmt.Printf("%d max stack height read and %d crane instructions read.\n", maxstackheight, len(input[1]))
+
+			labels := parseLabels(input[0])
+			instructions := parseInstructions(input[1])
+
+			if Parts.Has(1) {
+				fmt.Println("Part 1 running...")
+
+				stacks := parseStacks(labels, input[0])
+
+				applyInstructions(stacks, instructions)
+
+				printTop("After crane operations, the top of the stacks are: ", labels, stacks)
+			}
+
+			if Parts.Has(2) {
+				fmt.Println("Part 2 running...")
+
+				stacks := parseStacks(labels, input[0])
+
+				applyInstructionsCrateMove9001(stacks, instructions)
+
+				printTop("After CrateMover 9001 operations, the top of the stacks are: ", labels, stacks)
+			}
 		}
-		maxstackheight := len(input[0]) - 1
-		fmt.Printf("%d max stack height read and %d crane instructions read.\n", maxstackheight, len(input[1]))
-
-		labels := parseLabels(input[0])
-		instructions := parseInstructions(input[1])
-
-		if runall || Part == "1" {
-			fmt.Println("Part 1 running...")
-
-			stacks := parseStacks(labels, input[0])
-
-			applyInstructions(stacks, instructions)
-
-			printTop("After crane operations, the top of the stacks are: ", labels, stacks)
-		}
-
-		if runall || Part == "2" {
-			fmt.Println("Part 2 running...")
-
-			stacks := parseStacks(labels, input[0])
-
-			applyInstructionsCrateMove9001(stacks, instructions)
-
-			printTop("After CrateMover 9001 operations, the top of the stacks are: ", labels, stacks)
-		}
-
-		xmas.PrintHolidayMessage(time.Since(start))
-
-		return nil
 	},
 }
 

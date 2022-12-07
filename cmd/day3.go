@@ -89,37 +89,30 @@ var day3Cmd = &cobra.Command{
 	Short: "AoC Day 3",
 	Long:  `Advent of Code Day 3: Rucksack Reorganization`,
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		start := time.Now()
-		var runall bool = Part == "*"
+	Run: func(cmd *cobra.Command, args []string) {
+		defer xmas.PrintHolidayMessage(time.Now())
 
-		input, err := xmas.ReadFileToRuneSliceLines(args[0])
-		if err != nil {
-			return err
+		if input := xmas.ReadFileToRuneSliceLines(args[0]); input != nil {
+			fmt.Printf("%d rucksacks packed.\n", len(input))
+
+			priorities := runeToPriority(input)
+
+			if Parts.Has(1) {
+				fmt.Println("Part 1 running...")
+
+				errors := rucksackErrors(priorities)
+
+				fmt.Printf("Combined priorities of rucksacking-packing errors is **%d**\n", xmas.SumInt64(errors))
+			}
+
+			if Parts.Has(2) {
+				fmt.Println("Part 2 running...")
+
+				badges := findBadges(priorities)
+
+				fmt.Printf("The sum of all %d badge type priorities is **%d**\n", len(badges), xmas.SumInt64(badges))
+			}
 		}
-		fmt.Printf("%d rucksacks packed.\n", len(input))
-
-		priorities := runeToPriority(input)
-
-		if runall || Part == "1" {
-			fmt.Println("Part 1 running...")
-
-			errors := rucksackErrors(priorities)
-
-			fmt.Printf("Combined priorities of rucksacking-packing errors is **%d**\n", xmas.SumInt64(errors))
-		}
-
-		if runall || Part == "2" {
-			fmt.Println("Part 2 running...")
-
-			badges := findBadges(priorities)
-
-			fmt.Printf("The sum of all %d badge type priorities is **%d**\n", len(badges), xmas.SumInt64(badges))
-		}
-
-		xmas.PrintHolidayMessage(time.Since(start))
-
-		return nil
 	},
 }
 

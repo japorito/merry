@@ -2,13 +2,15 @@ package xmas
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 )
 
-func ReadFileToLines(filePath string) ([]string, error) {
+func ReadFileToLines(filePath string) []string {
 	inputFile, err := os.Open(filePath)
 	if err != nil {
-		return nil, err
+		fmt.Println("Failed te read file", filePath)
+		return nil
 	}
 	defer inputFile.Close()
 
@@ -20,77 +22,53 @@ func ReadFileToLines(filePath string) ([]string, error) {
 		inputLines = append(inputLines, inputScanner.Text())
 	}
 
-	return inputLines, nil
+	return inputLines
 }
 
-func ReadFileToRuneSliceLines(filePath string) ([][]rune, error) {
-	inputLines, err := ReadFileToLines(filePath)
-	if err != nil {
-		return nil, err
-	}
+func ReadFileToRuneSliceLines(filePath string) [][]rune {
+	inputLines := ReadFileToLines(filePath)
 
-	return ToRunes(inputLines), nil
+	return ToRunes(inputLines)
 }
 
-func ReadFileAsInt64Slice(filePath string) ([]int64, error) {
-	inputLines, err := ReadFileToLines(filePath)
-	if err != nil {
-		return nil, err
-	}
+func ReadFileAsInt64Slice(filePath string) []int64 {
+	inputLines := ReadFileToLines(filePath)
 
 	return ToInt64s(inputLines)
 }
 
-func ReadFileAsBinaryUInt64Slice(filePath string) ([]uint64, error) {
-	inputLines, err := ReadFileToLines(filePath)
-	if err != nil {
-		return nil, err
-	}
+func ReadFileAsBinaryUInt64Slice(filePath string) []uint64 {
+	inputLines := ReadFileToLines(filePath)
 
 	return BinaryStringToUint64s(inputLines)
 }
 
-func ReadFileAsBitAbstractionUInt64Slice(filePath, zeroVal, oneVal string) ([]uint64, error) {
-	inputLines, err := ReadFileToLines(filePath)
-	if err != nil {
-		return nil, err
-	}
+func ReadFileAsBitAbstractionUInt64Slice(filePath, zeroVal, oneVal string) []uint64 {
+	inputLines := ReadFileToLines(filePath)
 
 	return BitAbstractionToUint64s(inputLines, zeroVal, oneVal)
 }
 
-func ReadFileAsTokenizedStringSlice(filePath string) ([][]string, error) {
-	inputLines, err := ReadFileToLines(filePath)
-	if err != nil {
-		return nil, err
-	}
+func ReadFileAsTokenizedStringSlice(filePath string) [][]string {
+	inputLines := ReadFileToLines(filePath)
 
-	return Tokenize(inputLines), nil
+	return Tokenize(inputLines)
 }
 
-func ReadFileAsCharacterBooleanSlice(filePath string) ([][]bool, error) {
-	inputLines, err := ReadFileToLines(filePath)
-	if err != nil {
-		return nil, err
-	}
+func ReadFileAsCharacterBooleanSlice(filePath string) [][]bool {
+	inputLines := ReadFileToLines(filePath)
 
 	return ToBools(inputLines)
 }
 
-func ReadFileToStringSliceBlocks(filePath string) ([][]string, error) {
-	inputLines, err := ReadFileToLines(filePath)
-	if err != nil {
-		return nil, err
-	}
+func ReadFileToStringSliceBlocks(filePath string) [][]string {
+	inputLines := ReadFileToLines(filePath)
 
-	return BreakToBlocks(inputLines), nil
+	return BreakToBlocks(inputLines)
 }
 
-func ReadFileToInt64SliceBlocks(filePath string) ([][]int64, error) {
-	inputLines, err := ReadFileToLines(filePath)
-	if err != nil {
-		return nil, err
-	}
+func ReadFileToInt64SliceBlocks(filePath string) [][]int64 {
+	inputLines := ReadFileToLines(filePath)
 
 	return BreakToInt64Blocks(inputLines)
 }

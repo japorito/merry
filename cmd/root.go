@@ -19,6 +19,7 @@ package cmd
 import (
 	"os"
 
+	xmas "github.com/japorito/merry/libxmas"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +33,7 @@ Planned use will look something like:
 merry day1 [--part=1] /path/to/input`,
 }
 
-var Part string
+var Parts xmas.BitSet[int]
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -44,6 +45,17 @@ func Execute() {
 }
 
 func init() {
+	var part string
+
 	// Flag definitions and configuration settings.
-	rootCmd.PersistentFlags().StringVarP(&Part, "Part", "p", "*", "Which puzzle part to run.")
+	rootCmd.PersistentFlags().StringVarP(&part, "Part", "p", "*", "Which puzzle part to run.")
+
+	allParts := (part == "*")
+	if allParts || part == "1" {
+		Parts.On(1)
+	}
+
+	if allParts || part == "2" {
+		Parts.On(2)
+	}
 }

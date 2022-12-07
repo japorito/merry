@@ -20,27 +20,20 @@ very simple outline that can be used for
 future (real) days. Requires a filename
 argument to process.`,
 	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		start := time.Now()
-		var runall bool = Part == "*"
+	Run: func(cmd *cobra.Command, args []string) {
+		defer xmas.PrintHolidayMessage(time.Now())
 
-		input, err := xmas.ReadFileAsInt64Slice(args[0])
-		if err != nil {
-			return err
+		if input := xmas.ReadFileAsInt64Slice(args[0]); input != nil {
+			fmt.Printf("%d input lines read.\n", len(input))
+
+			if Parts.Has(1) {
+				fmt.Println("Part 1 running...")
+			}
+
+			if Parts.Has(2) {
+				fmt.Println("Part 2 running...")
+			}
 		}
-		fmt.Printf("%d input lines read.\n", len(input))
-
-		if runall || Part == "1" {
-			fmt.Println("Part 1 running...")
-		}
-
-		if runall || Part == "2" {
-			fmt.Println("Part 2 running...")
-		}
-
-		xmas.PrintHolidayMessage(time.Since(start))
-
-		return nil
 	},
 }
 

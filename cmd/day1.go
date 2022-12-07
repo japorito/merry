@@ -32,32 +32,25 @@ var day1Cmd = &cobra.Command{
 	Short: "Advent of Code Day 1",
 	Long:  `Advent of Code Day 1: Calorie Counting`,
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		start := time.Now()
-		var runall bool = Part == "*"
+	Run: func(cmd *cobra.Command, args []string) {
+		defer xmas.PrintHolidayMessage(time.Now())
 
-		input, err := xmas.ReadFileToInt64SliceBlocks(args[0])
-		if err != nil {
-			return err
+		if input := xmas.ReadFileToInt64SliceBlocks(args[0]); input != nil {
+			fmt.Printf("%d elves are carrying snacks.\n", len(input))
+
+			calories := calculateElfCalories(input)
+			xmas.SortInt64Desc(calories)
+
+			if Parts.Has(1) {
+				fmt.Println("Part 1 running...")
+				fmt.Printf("Answer 1: The top snack stash has **%d** calories.\n", calories[0])
+			}
+
+			if Parts.Has(2) {
+				fmt.Println("Part 2 running...")
+				fmt.Printf("Answer 2: The top 3 snack stashes have **%d** total calories.\n", xmas.SumInt64(calories[:3]))
+			}
 		}
-		fmt.Printf("%d elves are carrying snacks.\n", len(input))
-
-		calories := calculateElfCalories(input)
-		xmas.SortInt64Desc(calories)
-
-		if runall || Part == "1" {
-			fmt.Println("Part 1 running...")
-			fmt.Printf("Answer 1: The top snack stash has **%d** calories.\n", calories[0])
-		}
-
-		if runall || Part == "2" {
-			fmt.Println("Part 2 running...")
-			fmt.Printf("Answer 2: The top 3 snack stashes have **%d** total calories.\n", xmas.SumInt64(calories[:3]))
-		}
-
-		xmas.PrintHolidayMessage(time.Since(start))
-
-		return nil
 	},
 }
 
