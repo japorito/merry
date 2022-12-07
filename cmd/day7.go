@@ -71,9 +71,30 @@ func changeDirectories(target string, pathToRoot *xmas.Stack[*WeightedNode]) {
 	}
 }
 
+func createFileListingNode(fileListing []string) *WeightedNode {
+	var newNode WeightedNode
+	filename := fileListing[1]
+	switch fileListing[0] {
+	case "dir":
+		newNode = Directory{
+			name:     filename,
+			children: make(map[string]*WeightedNode),
+		}
+	default:
+		filesize, _ := strconv.Atoi(fileListing[0])
+		newNode = File{
+			name: filename,
+			size: filesize,
+		}
+	}
+
+	return &newNode
+}
+
 func buildFileTree(commandLog [][]string) WeightedNode {
 	pathToRoot := xmas.Stack[*WeightedNode]{}
 
+	// initialize root directory
 	var root WeightedNode = Directory{
 		name:     "/",
 		children: make(map[string]*WeightedNode),
@@ -81,33 +102,18 @@ func buildFileTree(commandLog [][]string) WeightedNode {
 	pathToRoot.Push(&root)
 
 	// first cd to root initialized above
+	currentDir := pathToRoot.Peek()
 	for _, logLine := range commandLog[1:] {
 		switch logLine[1] {
 		case "ls":
 			// only ls in currentDir... safely skip this line
 		case "cd":
 			changeDirectories(logLine[2], &pathToRoot)
-		default:
+			currentDir = pathToRoot.Peek()
+		default: // file or directory listing
 			filename := logLine[1]
-
-			if _, ok := (*pathToRoot.Peek()).Children()[filename]; !ok {
-				var newNode WeightedNode
-
-				switch logLine[0] {
-				case "dir":
-					newNode = Directory{
-						name:     filename,
-						children: make(map[string]*WeightedNode),
-					}
-				default:
-					filesize, _ := strconv.Atoi(logLine[0])
-					newNode = File{
-						name: filename,
-						size: filesize,
-					}
-				}
-
-				(*pathToRoot.Peek()).Children()[filename] = &newNode
+			if _, ok := (*currentDir).Children()[filename]; !ok {
+				(*currentDir).Children()[filename] = createFileListingNode(logLine)
 			}
 		}
 	}
@@ -115,51 +121,53 @@ func buildFileTree(commandLog [][]string) WeightedNode {
 	return root
 }
 
-func PrintTree(root WeightedNode, indent int) {
-	for i := 0; i < indent; i++ {
-		fmt.Print(" ")
+// func printTree(node WeightedNode, indent int) {
+// 	indentFormat := fmt.Sprintf("%%%ds", indent)
+// 	indentString := fmt.Sprintf(indentFormat, "")
+
+// 	fmt.Printf("%s - %s (%T %d)\n", indentString, node.Name(), node, node.Weight())
+
+// 	for _, child := range node.Children() {
+// 		printTree(*child, indent+1)
+// 	}
+// }
+
+func walkTree(node WeightedNode, currentVal int, f func(WeightedNode, int) int) int {
+	currentVal = f(node, currentVal)
+
+	for _, child := range node.Children() {
+		currentVal = walkTree(*child, currentVal, f)
 	}
 
-	fmt.Print(root.Name())
-	fmt.Println()
-
-	for _, child := range root.Children() {
-		PrintTree(*child, indent+1)
-	}
+	return currentVal
 }
 
-func combinedSize(root WeightedNode, sum *int) {
-	currentSize := root.Weight()
-	if currentSize < 100000 {
-		*sum += currentSize
-	}
-
-	for _, child := range root.Children() {
-		switch (*child).(type) {
+func combinedSize(root WeightedNode, maxToInclude int) int {
+	return walkTree(root, 0, func(node WeightedNode, sum int) int {
+		switch node.(type) {
 		case Directory:
-			combinedSize(*child, sum)
+			currentSize := node.Weight()
+			if currentSize <= maxToInclude {
+				sum += currentSize
+			}
 		}
-	}
+
+		return sum
+	})
 }
+
 func smallestDeleteableDirSize(root WeightedNode, minSatisfyingSize int) int {
-	size := root.Weight()
-	minSize := math.MaxInt
-	if size > minSatisfyingSize {
-		minSize = size
-	}
-
-	for _, child := range root.Children() {
-		switch (*child).(type) {
+	return walkTree(root, math.MaxInt, func(node WeightedNode, minSize int) int {
+		switch node.(type) {
 		case Directory:
-			size = smallestDeleteableDirSize(*child, minSatisfyingSize)
-
+			size := node.Weight()
 			if size > minSatisfyingSize && size < minSize {
 				minSize = size
 			}
 		}
-	}
 
-	return minSize
+		return minSize
+	})
 }
 
 func spaceToFree(root WeightedNode) int {
@@ -191,10 +199,7 @@ var day7Cmd = &cobra.Command{
 		if runall || Part == "1" {
 			fmt.Println("Part 1 running...")
 
-			sum := 0
-			combinedSize(root, &sum)
-
-			fmt.Printf("Combined size of directories smaller than 100,000 is **%d**.\n", sum)
+			fmt.Printf("Combined size of directories smaller than 100,000 is **%d**.\n", combinedSize(root, 100000))
 		}
 
 		if runall || Part == "2" {
