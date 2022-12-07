@@ -10,7 +10,6 @@ import (
 )
 
 const bitsetBlockSize = 64
-const bitsetMaxBlockOffset = bitsetBlockSize - 1
 
 type Integral interface {
 	~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uint |
