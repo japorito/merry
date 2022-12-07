@@ -182,7 +182,7 @@ func spaceToFree(root WeightedNode) int {
 var day7Cmd = &cobra.Command{
 	Use:   "day7 path/to/input/file",
 	Short: "AoC Day 7",
-	Long:  `Advent of Code Day 7`,
+	Long:  `Advent of Code Day 7: No Space Left On Device`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		defer xmas.PrintHolidayMessage(time.Now())

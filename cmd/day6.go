@@ -32,7 +32,7 @@ func findNUniqueIndex(datastream []rune, unique int64) int64 {
 var day6Cmd = &cobra.Command{
 	Use:   "day6 path/to/input/file",
 	Short: "AoC Day 6",
-	Long:  `Advent of Code Day 6: `,
+	Long:  `Advent of Code Day 6: Tuning Trouble`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		defer xmas.PrintHolidayMessage(time.Now())

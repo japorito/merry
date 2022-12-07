@@ -43,7 +43,7 @@ func ToInt64s(input []string) []int64 {
 }
 
 func BinaryStringToUint64s(input []string) []uint64 {
-	var output []uint64
+	output := make([]uint64, 0, len(input))
 	for lineIdx, inputLine := range input {
 		parsedNum, err := strconv.ParseUint(inputLine, 2, 64)
 		if err != nil {
@@ -72,7 +72,7 @@ func ToBools(input []string) [][]bool {
 }
 
 func CharToBools(input []string, trueVal, falseVal rune) [][]bool {
-	var output [][]bool
+	output := make([][]bool, 0, len(input))
 	for lineNo, inputLine := range input {
 		var outputLine []bool
 
@@ -118,7 +118,7 @@ func BreakToBlocks(input []string) [][]string {
 func BreakToInt64Blocks(input []string) [][]int64 {
 	stringBlocks := BreakToBlocks(input)
 
-	var output [][]int64
+	output := make([][]int64, 0, len(stringBlocks))
 	for _, block := range stringBlocks {
 		iBlock := ToInt64s(block)
 

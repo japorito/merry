@@ -28,6 +28,30 @@ argument to process.`,
 
 			if Parts.Has(1) {
 				fmt.Println("Part 1 running...")
+
+				set1 := xmas.BitSet[int]{}
+				set1.On(0)
+				set1.On(-64)
+				fmt.Println(set1.Members())
+
+				set1.On(-1)
+				set1.On(64)
+				set1.Off(-64)
+				fmt.Println(set1.Members())
+
+				set2 := xmas.BitSet[int]{}
+				set3 := xmas.BitSet[int]{}
+				set4 := xmas.BitSet[int]{}
+
+				set2.On(128)
+				set3.On(-128)
+				set4.On(64)
+
+				set5 := set1.Union(set2, set3)
+				fmt.Println(set5.Members())
+
+				set1.Subtract(set4)
+				fmt.Println(set4.Capacity(), set4.Members(), set1.Members())
 			}
 
 			if Parts.Has(2) {
