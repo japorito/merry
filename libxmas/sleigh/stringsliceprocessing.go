@@ -1,4 +1,6 @@
-package xmas
+// sleigh is how Santa gets his toys from here to there
+// (data transformations)
+package sleigh
 
 import (
 	"fmt"

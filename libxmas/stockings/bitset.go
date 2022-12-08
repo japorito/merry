@@ -1,9 +1,11 @@
 /*
 This is a bad implementation that you should not use, but it is sufficient for my purposes.
-Should work fine for small, positive ints.
+Should work fine for non-sparse data sets
 */
 
-package xmas
+// stockings are where you keep the toys
+// a.k.a. data structures
+package stockings
 
 import (
 	"math/bits"

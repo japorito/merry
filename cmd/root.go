@@ -19,7 +19,7 @@ package cmd
 import (
 	"os"
 
-	xmas "github.com/japorito/merry/libxmas"
+	"github.com/japorito/merry/libxmas/stockings"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +33,7 @@ Planned use will look something like:
 merry day1 [--part=1] /path/to/input`,
 }
 
-var Parts xmas.BitSet[int]
+var Parts stockings.BitSet[int]
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.

@@ -9,8 +9,9 @@ import (
 	"strconv"
 	"time"
 
-	xmas "github.com/japorito/merry/libxmas"
-	sleigh "github.com/japorito/merry/libxmas/input"
+	"github.com/japorito/merry/libxmas/stockings"
+	"github.com/japorito/merry/libxmas/toybag"
+	"github.com/japorito/merry/libxmas/xmas"
 	"github.com/spf13/cobra"
 )
 
@@ -63,7 +64,7 @@ func (d Directory) Children() map[string]*WeightedNode {
 	return d.children
 }
 
-func changeDirectories(target string, pathToRoot *xmas.Stack[*WeightedNode]) {
+func changeDirectories(target string, pathToRoot *stockings.Stack[*WeightedNode]) {
 	current := pathToRoot.Peek()
 	if target == ".." {
 		pathToRoot.Pop()
@@ -93,7 +94,7 @@ func createFileListingNode(fileListing []string) *WeightedNode {
 }
 
 func buildFileTree(commandLog [][]string) WeightedNode {
-	pathToRoot := xmas.Stack[*WeightedNode]{}
+	pathToRoot := stockings.Stack[*WeightedNode]{}
 
 	// initialize root directory
 	var root WeightedNode = Directory{
@@ -187,7 +188,7 @@ var day7Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer xmas.PrintHolidayMessage(time.Now())
 
-		if input := sleigh.ReadAsTokenizedStringSlice(args...); input != nil {
+		if input := toybag.ReadAsTokenizedStringSlice(args...); input != nil {
 			fmt.Printf("%d terminal output lines read.\n", len(input))
 
 			root := buildFileTree(input)

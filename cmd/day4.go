@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
-	xmas "github.com/japorito/merry/libxmas"
-	sleigh "github.com/japorito/merry/libxmas/input"
+	"github.com/japorito/merry/libxmas/sleigh"
+	"github.com/japorito/merry/libxmas/toybag"
+	"github.com/japorito/merry/libxmas/xmas"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +18,7 @@ func parseAssignmentRanges(input []string) [][]int64 {
 	output := make([][]int64, len(input))
 	for i, assignmentPair := range input {
 		output[i] =
-			xmas.ToInt64s(
+			sleigh.ToInt64s(
 				strings.FieldsFunc(assignmentPair,
 					func(r rune) bool {
 						return r == ',' || r == '-'
@@ -72,7 +73,7 @@ var day4Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer xmas.PrintHolidayMessage(time.Now())
 
-		if input := sleigh.ReadToLines(args...); input != nil {
+		if input := toybag.ReadToLines(args...); input != nil {
 			fmt.Printf("%d assignment pairs read.\n", len(input))
 
 			assignmentPairs := parseAssignmentRanges(input)

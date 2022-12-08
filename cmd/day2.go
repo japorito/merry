@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	xmas "github.com/japorito/merry/libxmas"
-	sleigh "github.com/japorito/merry/libxmas/input"
+	"github.com/japorito/merry/libxmas/toybag"
+	"github.com/japorito/merry/libxmas/xmas"
 	"github.com/spf13/cobra"
 )
 
@@ -88,7 +88,7 @@ var day2Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer xmas.PrintHolidayMessage(time.Now())
 
-		if input := sleigh.ReadAsTokenizedStringSlice(args...); input != nil {
+		if input := toybag.ReadAsTokenizedStringSlice(args...); input != nil {
 			fmt.Printf("%d games of rock, paper, scissors in the cipher.\n", len(input))
 
 			if Parts.Has(1) {

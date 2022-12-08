@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"time"
 
-	xmas "github.com/japorito/merry/libxmas"
-	sleigh "github.com/japorito/merry/libxmas/input"
+	"github.com/japorito/merry/libxmas/stockings"
+	"github.com/japorito/merry/libxmas/toybag"
+	"github.com/japorito/merry/libxmas/xmas"
 	"github.com/spf13/cobra"
 )
 
 func findNUniqueIndex(datastream []rune, unique int64) int64 {
-	letterSet := xmas.BitSet[rune]{}
+	letterSet := stockings.BitSet[rune]{}
 	for i := unique; i < int64(len(datastream)); i++ {
 		for _, letter := range datastream[i-unique : i] {
 			letterSet.On(letter)
@@ -35,7 +36,7 @@ var day6Cmd = &cobra.Command{
 	Short: "AoC Day 6",
 	Long:  `Advent of Code Day 6: Tuning Trouble`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if input := sleigh.ReadToRuneSliceLines(args...); input != nil {
+		if input := toybag.ReadToRuneSliceLines(args...); input != nil {
 			fmt.Printf("%d communications datastreams read.\n", len(input))
 
 			defer xmas.PrintHolidayMessage(time.Now())

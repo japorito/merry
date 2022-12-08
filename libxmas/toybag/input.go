@@ -1,4 +1,4 @@
-package sleigh
+package toybag
 
 import (
 	"fmt"

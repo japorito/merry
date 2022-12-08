@@ -9,8 +9,9 @@ import (
 	"strings"
 	"time"
 
-	xmas "github.com/japorito/merry/libxmas"
-	sleigh "github.com/japorito/merry/libxmas/input"
+	"github.com/japorito/merry/libxmas/stockings"
+	"github.com/japorito/merry/libxmas/toybag"
+	"github.com/japorito/merry/libxmas/xmas"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +30,7 @@ func parseLabels(stacklisting []string) []string {
 	return strings.Fields(labelline)
 }
 
-func parseStacks(labels, stacklisting []string) map[string]*xmas.Stack[rune] {
+func parseStacks(labels, stacklisting []string) map[string]*stockings.Stack[rune] {
 	maxstackheight := len(stacklisting) - 1
 
 	labelline := stacklisting[maxstackheight]
@@ -40,7 +41,7 @@ func parseStacks(labels, stacklisting []string) map[string]*xmas.Stack[rune] {
 		stackcol[label] = strings.Index(labelline, label)
 	}
 
-	stacks := make(map[string]*xmas.Stack[rune], len(labels))
+	stacks := make(map[string]*stockings.Stack[rune], len(labels))
 	for stackname, stackidx := range stackcol {
 		for i := len(stackdescriptions) - 1; i >= 0; i-- {
 			line := stackdescriptions[i]
@@ -49,7 +50,7 @@ func parseStacks(labels, stacklisting []string) map[string]*xmas.Stack[rune] {
 			if stackidx < len(layerdescription) && layerdescription[stackidx] != ' ' {
 				stack, ok := stacks[stackname]
 				if !ok {
-					stack = &xmas.Stack[rune]{}
+					stack = &stockings.Stack[rune]{}
 					stacks[stackname] = stack
 				}
 				stack.Push(layerdescription[stackidx])
@@ -78,7 +79,7 @@ func parseInstructions(instructionset []string) []instruction {
 	return instructions
 }
 
-func applyInstructions(stacks map[string]*xmas.Stack[rune], instructions []instruction) {
+func applyInstructions(stacks map[string]*stockings.Stack[rune], instructions []instruction) {
 	for _, inst := range instructions {
 		for i := 0; i < inst.arg; i++ {
 			fromstack := stacks[inst.src]
@@ -89,7 +90,7 @@ func applyInstructions(stacks map[string]*xmas.Stack[rune], instructions []instr
 	}
 }
 
-func applyInstructionsCrateMove9001(stacks map[string]*xmas.Stack[rune], instructions []instruction) {
+func applyInstructionsCrateMove9001(stacks map[string]*stockings.Stack[rune], instructions []instruction) {
 	for _, inst := range instructions {
 		fromstack := stacks[inst.src]
 		tostack := stacks[inst.dst]
@@ -98,7 +99,7 @@ func applyInstructionsCrateMove9001(stacks map[string]*xmas.Stack[rune], instruc
 	}
 }
 
-func printTop(intro string, labels []string, stacks map[string]*xmas.Stack[rune]) {
+func printTop(intro string, labels []string, stacks map[string]*stockings.Stack[rune]) {
 	fmt.Print(intro, "**")
 	for _, label := range labels {
 		stack := stacks[label]
@@ -116,7 +117,7 @@ var day5Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defer xmas.PrintHolidayMessage(time.Now())
 
-		if input := sleigh.ReadToStringSliceBlocks(args...); input != nil {
+		if input := toybag.ReadToStringSliceBlocks(args...); input != nil {
 			maxstackheight := len(input[0]) - 1
 			fmt.Printf("%d max stack height read and %d crane instructions read.\n", maxstackheight, len(input[1]))
 

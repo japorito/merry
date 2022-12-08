@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	xmas "github.com/japorito/merry/libxmas"
-	sleigh "github.com/japorito/merry/libxmas/input"
+	"github.com/japorito/merry/libxmas/stockings"
+	"github.com/japorito/merry/libxmas/toybag"
+	"github.com/japorito/merry/libxmas/xmas"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +34,7 @@ func runeToPriority(input [][]rune) [][]int64 {
 }
 
 // find items repeated in all slices
-func repeatedPriorities(itemlists ...xmas.BitSet[int64]) []int64 {
+func repeatedPriorities(itemlists ...stockings.BitSet[int64]) []int64 {
 	repeatedItems := itemlists[0]
 
 	repeatedItems = repeatedItems.Intersect(itemlists[1:]...)
@@ -41,8 +42,8 @@ func repeatedPriorities(itemlists ...xmas.BitSet[int64]) []int64 {
 	return repeatedItems.Members()
 }
 
-func createSet(items []int64) xmas.BitSet[int64] {
-	set := xmas.BitSet[int64]{}
+func createSet(items []int64) stockings.BitSet[int64] {
+	set := stockings.BitSet[int64]{}
 	for _, item := range items {
 		set.On(item)
 	}
@@ -50,8 +51,8 @@ func createSet(items []int64) xmas.BitSet[int64] {
 	return set
 }
 
-func createSets(itemgroups ...[]int64) []xmas.BitSet[int64] {
-	sets := make([]xmas.BitSet[int64], 0, len(itemgroups))
+func createSets(itemgroups ...[]int64) []stockings.BitSet[int64] {
+	sets := make([]stockings.BitSet[int64], 0, len(itemgroups))
 
 	for _, itemgroup := range itemgroups {
 		sets = append(sets, createSet(itemgroup))
@@ -90,7 +91,7 @@ var day3Cmd = &cobra.Command{
 	Short: "AoC Day 3",
 	Long:  `Advent of Code Day 3: Rucksack Reorganization`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if input := sleigh.ReadToRuneSliceLines(args...); input != nil {
+		if input := toybag.ReadToRuneSliceLines(args...); input != nil {
 			fmt.Printf("%d rucksacks packed.\n", len(input))
 
 			defer xmas.PrintHolidayMessage(time.Now())

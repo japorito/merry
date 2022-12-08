@@ -1,4 +1,4 @@
-package xmas
+package stockings
 
 type Stack[T any] struct {
 	data []T

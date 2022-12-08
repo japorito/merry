@@ -1,11 +1,11 @@
-// Package sleigh brings Santa's input data
-package sleigh
+// Package toybag is how Santa brings his input data
+package toybag
 
 import (
 	"bufio"
 	"fmt"
 
-	xmas "github.com/japorito/merry/libxmas"
+	"github.com/japorito/merry/libxmas/sleigh"
 )
 
 func ReadToLines(args ...string) []string {
@@ -30,47 +30,47 @@ func ReadToLines(args ...string) []string {
 func ReadToRuneSliceLines(args ...string) [][]rune {
 	inputLines := ReadToLines(args...)
 
-	return xmas.ToRunes(inputLines)
+	return sleigh.ToRunes(inputLines)
 }
 
 func ReadAsInt64Slice(args ...string) []int64 {
 	inputLines := ReadToLines(args...)
 
-	return xmas.ToInt64s(inputLines)
+	return sleigh.ToInt64s(inputLines)
 }
 
 func ReadAsBinaryUInt64Slice(args ...string) []uint64 {
 	inputLines := ReadToLines(args...)
 
-	return xmas.BinaryStringToUint64s(inputLines)
+	return sleigh.BinaryStringToUint64s(inputLines)
 }
 
 func ReadAsBitAbstractionUInt64Slice(zeroVal, oneVal string, args ...string) []uint64 {
 	inputLines := ReadToLines(args...)
 
-	return xmas.BitAbstractionToUint64s(inputLines, zeroVal, oneVal)
+	return sleigh.BitAbstractionToUint64s(inputLines, zeroVal, oneVal)
 }
 
 func ReadAsTokenizedStringSlice(args ...string) [][]string {
 	inputLines := ReadToLines(args...)
 
-	return xmas.Tokenize(inputLines)
+	return sleigh.Tokenize(inputLines)
 }
 
 func ReadAsCharacterBooleanSlice(args ...string) [][]bool {
 	inputLines := ReadToLines(args...)
 
-	return xmas.ToBools(inputLines)
+	return sleigh.ToBools(inputLines)
 }
 
 func ReadToStringSliceBlocks(args ...string) [][]string {
 	inputLines := ReadToLines(args...)
 
-	return xmas.BreakToBlocks(inputLines)
+	return sleigh.BreakToBlocks(inputLines)
 }
 
 func ReadToInt64SliceBlocks(args ...string) [][]int64 {
 	inputLines := ReadToLines(args...)
 
-	return xmas.BreakToInt64Blocks(inputLines)
+	return sleigh.BreakToInt64Blocks(inputLines)
 }

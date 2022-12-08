@@ -1,5 +1,5 @@
 /*
-Copyright © 2022 Jacob Saporito
+Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 */
 package cmd
 
@@ -12,14 +12,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// day1Cmd represents the day1 command
-var day0Cmd = &cobra.Command{
-	Use:   "day0 path/to/input/file",
-	Short: "AoC Day 0",
-	Long: `Advent of Code Day 0 which provides a
-very simple outline that can be used for
-future (real) days. Requires a filename
-argument to process.`,
+// day9Cmd represents the day9 command
+var day9Cmd = &cobra.Command{
+	Use:   "day9 path/to/input/file",
+	Short: "AoC Day 9",
+	Long:  `Advent of Code Day 9: `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if input := toybag.ReadToLines(args...); input != nil {
 			fmt.Printf("%d input lines read.\n", len(input))
@@ -38,5 +35,5 @@ argument to process.`,
 }
 
 func init() {
-	rootCmd.AddCommand(day0Cmd)
+	rootCmd.AddCommand(day9Cmd)
 }
