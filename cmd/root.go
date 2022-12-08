@@ -33,47 +33,7 @@ Planned use will look something like:
 merry day1 [--part=1] /path/to/input`,
 }
 
-type MerryState struct {
-	Parts xmas.BitSet[int]
-	Input *os.File
-}
-
-func NewMerryState(args []string) MerryState {
-	state := MerryState{}
-
-	var part string
-
-	// Flag definitions and configuration settings.
-	rootCmd.PersistentFlags().StringVarP(&part, "Part", "p", "*", "Which puzzle part to run.")
-
-	allParts := (part == "*")
-	if allParts || part == "1" {
-		state.Parts.On(1)
-	}
-
-	if allParts || part == "2" {
-		state.Parts.On(2)
-	}
-
-	if len(args) == 1 {
-		inputFile, err := os.Open(args[0])
-		if err == nil {
-			state.Input = inputFile
-		}
-
-		if wd, err := os.Getwd(); err == nil {
-			inputFile, err := os.Open(wd + string(os.PathSeparator) + args[0])
-			if err == nil {
-				state.Input = inputFile
-				return state
-			}
-		}
-	} else if stat, err := os.Stdin.Stat(); err == nil && (stat.Mode()&os.ModeCharDevice) == 0 {
-		state.Input = os.Stdin
-	}
-
-	return state
-}
+var Parts xmas.BitSet[int]
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -85,4 +45,16 @@ func Execute() {
 }
 
 func init() {
+	var part string
+
+	rootCmd.PersistentFlags().StringVarP(&part, "Part", "p", "*", "Which puzzle part to run.")
+
+	allParts := (part == "*")
+	if allParts || part == "1" {
+		Parts.On(1)
+	}
+
+	if allParts || part == "2" {
+		Parts.On(2)
+	}
 }

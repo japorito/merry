@@ -8,6 +8,7 @@ import (
 	"time"
 
 	xmas "github.com/japorito/merry/libxmas"
+	sleigh "github.com/japorito/merry/libxmas/input"
 	"github.com/spf13/cobra"
 )
 
@@ -80,82 +81,55 @@ func determineVisibility(forest [][]*tree) [][]*tree {
 	return forest
 }
 
-func calculateScenicScore(forest [][]*tree, x, y int, out chan int) {
-	rowCount, rowLength := len(forest), len(forest[0])
-	if x == 0 || y == 0 || y == (rowCount-1) || x == (rowLength-1) {
+func checkHeightBlocksView(forest [][]*tree, col, row int, height rune) bool {
+	treeHeight := forest[row][col].height
+	return treeHeight >= height
+}
+
+func calculateScenicScore(forest [][]*tree, col, row, cols, rows int, out chan int) {
+	if col == 0 || row == 0 || row == (rows-1) || col == (cols-1) {
 		out <- 0
 		return
 	}
 
-	height := forest[y][x].height
-
+	height := forest[row][col].height
 	upCount, downCount, leftCount, rightCount := 0, 0, 0, 0
-	lookUp, lookDown, lookLeft, lookRight := true, true, true, true
-	for i := 1; i < rowCount; i++ {
-		yUp, yDown := y-i, y+i
-		if yUp < 0 && yDown > rowCount {
-			// hit vertical boundaries
+	i := 0
+	for i = row - 1; i > 0; i-- {
+		if checkHeightBlocksView(forest, col, i, height) {
 			break
-		}
-
-		if !lookUp && !lookDown {
-			break
-		}
-
-		if lookUp && forest[yUp][x].height <= height {
-			upCount = i
-		}
-
-		if yUp <= 0 || forest[yUp][x].height >= height {
-			lookUp = false
-		}
-
-		if lookDown && forest[yDown][x].height <= height {
-			downCount = i
-		}
-
-		if yDown >= (rowCount-1) || forest[yDown][x].height >= height {
-			lookDown = false
 		}
 	}
-
-	for i := 1; i < rowCount; i++ {
-		xLeft, xRight := x-i, x+i
-		if xLeft < 0 && xRight > rowCount {
-			// hit vertical boundaries
+	upCount = row - i
+	for i = row + 1; i < (rows - 1); i++ {
+		if checkHeightBlocksView(forest, col, i, height) {
 			break
-		}
-
-		if !lookLeft && !lookRight {
-			break
-		}
-
-		if lookLeft && forest[y][xLeft].height <= height {
-			leftCount = i
-		}
-
-		if xLeft <= 0 || forest[y][xLeft].height >= height {
-			lookLeft = false
-		}
-
-		if lookRight && forest[y][xRight].height <= height {
-			rightCount = i
-		}
-
-		if xRight >= (rowLength-1) || forest[y][xRight].height >= height {
-			lookRight = false
 		}
 	}
+	downCount = i - row
+	for i = col - 1; i > 0; i-- {
+		if checkHeightBlocksView(forest, i, row, height) {
+			break
+		}
+	}
+	leftCount = col - i
+	for i = col + 1; i < (cols - 1); i++ {
+		if checkHeightBlocksView(forest, i, row, height) {
+			break
+		}
+	}
+	rightCount = i - col
 
 	out <- upCount * downCount * leftCount * rightCount
 }
 
 func findHighestScenicScore(forest [][]*tree) int {
-	scores := make(chan int, 20)
+	scores := make(chan int, 15)
+	rows, cols := len(forest), len(forest[0])
 
-	for y := range forest {
-		for x := range forest[y] {
-			go calculateScenicScore(forest, x, y, scores)
+	for row := range forest {
+		for col := range forest[row] {
+			go calculateScenicScore(forest, col, row, cols, rows, scores)
 		}
 	}
 
@@ -187,26 +161,24 @@ func countVisible(forest [][]*tree) int {
 var day8Cmd = &cobra.Command{
 	Use:   "day8 path/to/input/file",
 	Short: "AoC Day 8",
-	Long:  `Advent of Code Day 8: `,
-	//Args:  cobra.ExactArgs(1),
+	Long:  `Advent of Code Day 8: Treetop Tree House`,
 	Run: func(cmd *cobra.Command, args []string) {
-		state := NewMerryState(args)
-		if input := xmas.ReadFileToRuneSliceLines(args[0]); input != nil {
-			fmt.Printf("%d input lines read.\n", len(input))
+		if input := sleigh.ReadToRuneSliceLines(args...); input != nil {
+			fmt.Printf("%d rows of trees read.\n", len(input))
 
 			defer xmas.PrintHolidayMessage(time.Now())
 
 			forest := createForest(input)
 			determineVisibility(forest)
 
-			if state.Parts.Has(1) {
+			if Parts.Has(1) {
 				fmt.Println("Part 1 running...")
 				fmt.Printf("Count of outwardly-visible trees in forest is **%d**.\n", countVisible(forest))
 			}
 
-			if state.Parts.Has(2) {
+			if Parts.Has(2) {
 				fmt.Println("Part 2 running...")
-				fmt.Println(findHighestScenicScore(forest))
+				fmt.Printf("Top tree has Scenic Score: **%d**\n", findHighestScenicScore(forest))
 			}
 		}
 	},

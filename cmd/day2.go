@@ -8,6 +8,7 @@ import (
 	"time"
 
 	xmas "github.com/japorito/merry/libxmas"
+	sleigh "github.com/japorito/merry/libxmas/input"
 	"github.com/spf13/cobra"
 )
 
@@ -84,13 +85,10 @@ var day2Cmd = &cobra.Command{
 	Use:   "day2 path/to/input/file",
 	Short: "Advent of Code Day 2",
 	Long:  `Advent of Code Day 2: Rock Paper Scissors`,
-	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		state := NewMerryState(args)
-		Parts := state.Parts
 		defer xmas.PrintHolidayMessage(time.Now())
 
-		if input := xmas.ReadFileAsTokenizedStringSlice(args[0]); input != nil {
+		if input := sleigh.ReadAsTokenizedStringSlice(args...); input != nil {
 			fmt.Printf("%d games of rock, paper, scissors in the cipher.\n", len(input))
 
 			if Parts.Has(1) {

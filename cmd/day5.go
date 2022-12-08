@@ -10,6 +10,7 @@ import (
 	"time"
 
 	xmas "github.com/japorito/merry/libxmas"
+	sleigh "github.com/japorito/merry/libxmas/input"
 	"github.com/spf13/cobra"
 )
 
@@ -112,13 +113,10 @@ var day5Cmd = &cobra.Command{
 	Use:   "day5 path/to/input/file",
 	Short: "AoC Day 5",
 	Long:  `Advent of Code Day 5: Supply Stacks`,
-	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		state := NewMerryState(args)
-		Parts := state.Parts
 		defer xmas.PrintHolidayMessage(time.Now())
 
-		if input := xmas.ReadFileToStringSliceBlocks(args[0]); input != nil {
+		if input := sleigh.ReadToStringSliceBlocks(args...); input != nil {
 			maxstackheight := len(input[0]) - 1
 			fmt.Printf("%d max stack height read and %d crane instructions read.\n", maxstackheight, len(input[1]))
 

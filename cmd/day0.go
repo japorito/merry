@@ -8,6 +8,7 @@ import (
 	"time"
 
 	xmas "github.com/japorito/merry/libxmas"
+	sleigh "github.com/japorito/merry/libxmas/input"
 	"github.com/spf13/cobra"
 )
 
@@ -19,11 +20,8 @@ var day0Cmd = &cobra.Command{
 very simple outline that can be used for
 future (real) days. Requires a filename
 argument to process.`,
-	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		state := NewMerryState(args)
-		Parts := state.Parts
-		if input := xmas.ReadFileAsInt64Slice(args[0]); input != nil {
+		if input := sleigh.ReadAsInt64Slice(args...); input != nil {
 			fmt.Printf("%d input lines read.\n", len(input))
 
 			defer xmas.PrintHolidayMessage(time.Now())
