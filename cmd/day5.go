@@ -114,6 +114,8 @@ var day5Cmd = &cobra.Command{
 	Long:  `Advent of Code Day 5: Supply Stacks`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		state := NewMerryState(args)
+		Parts := state.Parts
 		defer xmas.PrintHolidayMessage(time.Now())
 
 		if input := xmas.ReadFileToStringSliceBlocks(args[0]); input != nil {

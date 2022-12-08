@@ -33,6 +33,8 @@ var day1Cmd = &cobra.Command{
 	Long:  `Advent of Code Day 1: Calorie Counting`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		state := NewMerryState(args)
+		Parts := state.Parts
 		defer xmas.PrintHolidayMessage(time.Now())
 
 		if input := xmas.ReadFileToInt64SliceBlocks(args[0]); input != nil {

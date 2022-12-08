@@ -6,15 +6,10 @@ import (
 	"os"
 )
 
-func ReadFileToLines(filePath string) []string {
-	inputFile, err := os.Open(filePath)
-	if err != nil {
-		fmt.Println("Failed te read file", filePath)
-		return nil
-	}
-	defer inputFile.Close()
+func ReadToLines(in *os.File) []string {
+	defer in.Close()
 
-	inputScanner := bufio.NewScanner(inputFile)
+	inputScanner := bufio.NewScanner(in)
 	inputScanner.Split(bufio.ScanLines)
 
 	var inputLines []string
@@ -23,6 +18,25 @@ func ReadFileToLines(filePath string) []string {
 	}
 
 	return inputLines
+}
+
+func ReadFileToLines(filePath string) []string {
+	inputFile, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println("Failed to read file", filePath)
+		return nil
+	}
+	defer inputFile.Close()
+
+	// inputScanner := bufio.NewScanner(inputFile)
+	// inputScanner.Split(bufio.ScanLines)
+
+	// var inputLines []string
+	// for inputScanner.Scan() {
+	// 	inputLines = append(inputLines, inputScanner.Text())
+	// }
+
+	return ReadToLines(inputFile)
 }
 
 func ReadFileToRuneSliceLines(filePath string) [][]rune {

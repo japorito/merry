@@ -21,10 +21,12 @@ future (real) days. Requires a filename
 argument to process.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		defer xmas.PrintHolidayMessage(time.Now())
-
+		state := NewMerryState(args)
+		Parts := state.Parts
 		if input := xmas.ReadFileAsInt64Slice(args[0]); input != nil {
 			fmt.Printf("%d input lines read.\n", len(input))
+
+			defer xmas.PrintHolidayMessage(time.Now())
 
 			if Parts.Has(1) {
 				fmt.Println("Part 1 running...")

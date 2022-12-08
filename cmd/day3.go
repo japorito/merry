@@ -90,10 +90,12 @@ var day3Cmd = &cobra.Command{
 	Long:  `Advent of Code Day 3: Rucksack Reorganization`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		defer xmas.PrintHolidayMessage(time.Now())
-
+		state := NewMerryState(args)
+		Parts := state.Parts
 		if input := xmas.ReadFileToRuneSliceLines(args[0]); input != nil {
 			fmt.Printf("%d rucksacks packed.\n", len(input))
+
+			defer xmas.PrintHolidayMessage(time.Now())
 
 			priorities := runeToPriority(input)
 

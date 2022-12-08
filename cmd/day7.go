@@ -185,6 +185,8 @@ var day7Cmd = &cobra.Command{
 	Long:  `Advent of Code Day 7: No Space Left On Device`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		state := NewMerryState(args)
+		Parts := state.Parts
 		defer xmas.PrintHolidayMessage(time.Now())
 
 		if input := xmas.ReadFileAsTokenizedStringSlice(args[0]); input != nil {

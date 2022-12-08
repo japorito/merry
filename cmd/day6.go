@@ -35,10 +35,12 @@ var day6Cmd = &cobra.Command{
 	Long:  `Advent of Code Day 6: Tuning Trouble`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		defer xmas.PrintHolidayMessage(time.Now())
-
 		if input := xmas.ReadFileToRuneSliceLines(args[0]); input != nil {
+			state := NewMerryState(args)
+			Parts := state.Parts
 			fmt.Printf("%d communications datastreams read.\n", len(input))
+
+			defer xmas.PrintHolidayMessage(time.Now())
 
 			if Parts.Has(1) {
 				fmt.Println("Part 1 running...")
