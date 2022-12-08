@@ -86,10 +86,9 @@ func checkHeightBlocksView(forest [][]*tree, col, row int, height rune) bool {
 	return treeHeight >= height
 }
 
-func calculateScenicScore(forest [][]*tree, col, row, cols, rows int, out chan int) {
+func calculateScenicScore(forest [][]*tree, col, row, cols, rows int) int {
 	if col == 0 || row == 0 || row == (rows-1) || col == (cols-1) {
-		out <- 0
-		return
+		return 0
 	}
 
 	height := forest[row][col].height
@@ -120,24 +119,19 @@ func calculateScenicScore(forest [][]*tree, col, row, cols, rows int, out chan i
 	}
 	rightCount = i - col
 
-	out <- upCount * downCount * leftCount * rightCount
+	return upCount * downCount * leftCount * rightCount
 }
 
 func findHighestScenicScore(forest [][]*tree) int {
-	scores := make(chan int, 15)
 	rows, cols := len(forest), len(forest[0])
 
+	maxScore := -1
 	for row := range forest {
 		for col := range forest[row] {
-			go calculateScenicScore(forest, col, row, cols, rows, scores)
-		}
-	}
-
-	maxScore := -1
-	for i := 0; i < (len(forest) * len(forest[0])); i++ {
-		score := <-scores
-		if score > maxScore {
-			maxScore = score
+			score := calculateScenicScore(forest, col, row, cols, rows)
+			if score > maxScore {
+				maxScore = score
+			}
 		}
 	}
 
