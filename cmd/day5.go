@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/japorito/merry/libxmas/sleigh"
 	"github.com/japorito/merry/libxmas/stockings"
 	"github.com/japorito/merry/libxmas/toybag"
 	"github.com/japorito/merry/libxmas/xmas"
@@ -31,30 +32,18 @@ func parseLabels(stacklisting []string) []string {
 }
 
 func parseStacks(labels, stacklisting []string) map[string]*stockings.Stack[rune] {
-	maxstackheight := len(stacklisting) - 1
+	data, _ := sleigh.FlipMatrix(sleigh.ToRunes(stacklisting))
 
-	labelline := stacklisting[maxstackheight]
-	stackdescriptions := stacklisting[:maxstackheight]
+	stacks := make(map[string]*stockings.Stack[rune])
 
-	stackcol := make(map[string]int)
-	for _, label := range labels {
-		stackcol[label] = strings.Index(labelline, label)
-	}
+	for _, row := range data {
+		if row[0] != ' ' {
+			stack := &stockings.Stack[rune]{}
 
-	stacks := make(map[string]*stockings.Stack[rune], len(labels))
-	for stackname, stackidx := range stackcol {
-		for i := len(stackdescriptions) - 1; i >= 0; i-- {
-			line := stackdescriptions[i]
-			layerdescription := []rune(line)
-
-			if stackidx < len(layerdescription) && layerdescription[stackidx] != ' ' {
-				stack, ok := stacks[stackname]
-				if !ok {
-					stack = &stockings.Stack[rune]{}
-					stacks[stackname] = stack
-				}
-				stack.Push(layerdescription[stackidx])
-			}
+			// some stacks are shorter than others, so remove ' ' trailing runes
+			crates := []rune(strings.TrimSpace(string(row[1:])))
+			stack.Push(crates...)
+			stacks[string(row[0])] = stack
 		}
 	}
 
