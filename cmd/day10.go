@@ -28,14 +28,14 @@ func newState() screenState {
 func lightPixel(state screenState) {
 	scanPos := (*state.clock - 1) % 40
 
-	if scanPos == 0 && *state.clock > 1 {
-		fmt.Println()
-	}
-
 	if abs(*state.register-(scanPos)) <= 1 {
 		fmt.Printf("#")
 	} else {
 		fmt.Printf(" ")
+	}
+
+	if scanPos == 39 {
+		fmt.Println()
 	}
 }
 
@@ -100,7 +100,6 @@ var day10Cmd = &cobra.Command{
 				fmt.Println("Part 2 running...")
 
 				run(input, lightPixel)
-				fmt.Println()
 			}
 		}
 	},
