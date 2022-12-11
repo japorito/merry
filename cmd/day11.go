@@ -97,9 +97,7 @@ func parseMonkeys(input [][]string) ([]*Monkey, int) {
 		for _, item := range monkeyDef[1][2:] {
 			itemNo, _ := strconv.Atoi(strings.TrimRight(item, ","))
 			monkey.items = append(monkey.items, &itemNo)
-			fmt.Print(itemNo, " ")
 		}
-		fmt.Println()
 		monkey.inspect = createInspect(monkeyDef[2])
 		monkey.inspectionCount = new(int)
 		monkey.test = createTest(monkeyDef[3], denominatorProduct)
@@ -142,10 +140,6 @@ func calculateMonkeyBusiness(monkeys []*Monkey) int {
 	sort.SliceStable(monkeysCopy, func(i, j int) bool {
 		return *monkeysCopy[j].inspectionCount < *monkeysCopy[i].inspectionCount
 	})
-
-	for _, monkey := range monkeysCopy {
-		fmt.Println(*monkey.inspectionCount)
-	}
 
 	return *monkeysCopy[0].inspectionCount * *monkeysCopy[1].inspectionCount
 }
