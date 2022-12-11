@@ -4,6 +4,10 @@ type Stack[T any] struct {
 	data []T
 }
 
+func (stack *Stack[T]) Size() int {
+	return len(stack.data)
+}
+
 func (stack *Stack[T]) Push(items ...T) *Stack[T] {
 	stack.data = append(stack.data, items...)
 
