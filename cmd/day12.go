@@ -1,5 +1,5 @@
 /*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
+Copyright © 2022 Jacob Saporito
 */
 package cmd
 
@@ -151,10 +151,10 @@ func runAStar(start, end Coordinate, heightMap [][]*aStarNode) {
 var day12Cmd = &cobra.Command{
 	Use:   "day12 path/to/input/file",
 	Short: "AoC Day 12",
-	Long:  `Advent of Code Day 12: `,
+	Long:  `Advent of Code Day 12: Hill Climbing Algorithm`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if input := toybag.ReadToRuneSliceLines(args...); input != nil {
-			fmt.Printf("%d input lines read.\n", len(input))
+			fmt.Printf("%dX%d height map read.\n", len(input), len(input[0]))
 
 			defer xmas.PrintHolidayMessage(time.Now())
 

@@ -151,7 +151,7 @@ func findDecoderKey(input [][]string, dividers ...string) int {
 var day13Cmd = &cobra.Command{
 	Use:   "day13 path/to/input/file",
 	Short: "AoC Day 13",
-	Long:  `Advent of Code Day 13: `,
+	Long:  `Advent of Code Day 13: Distress Signal`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if input := toybag.ReadToStringSliceBlocks(args...); input != nil {
 			fmt.Printf("%d packet pairs read read.\n", len(input))
