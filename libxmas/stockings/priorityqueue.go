@@ -1,7 +1,7 @@
 package stockings
 
 import (
-	"fmt"
+	"container/heap"
 	"math"
 )
 
@@ -23,7 +23,6 @@ func NewMaxPriorityQueue[T comparable](capacity int, prioritize func(item T) int
 func NewMinPriorityQueue[T comparable](capacity int, prioritize func(item T) int) *PriorityQueue[T] {
 	return &PriorityQueue[T]{
 		data: NewBinaryHeap(capacity, func(a, b *queueItem[T]) bool {
-			//fmt.Println(a.item, b.item)
 			return a.priority < b.priority
 		}),
 		prioritize: prioritize,
@@ -38,7 +37,7 @@ type PriorityQueue[T comparable] struct {
 }
 
 func (q *PriorityQueue[T]) GetNext() T {
-	next := q.data.ExtractTop()
+	next := heap.Pop(q.data).(*queueItem[T]) //q.data.Pop().(*queueItem[T]) //.ExtractTop()
 
 	delete(q.members, next.item)
 
@@ -56,7 +55,7 @@ func (q *PriorityQueue[T]) IndexOf(key T) int {
 }
 
 func (q *PriorityQueue[T]) Size() int {
-	return q.data.size
+	return q.data.Len()
 }
 
 func (q *PriorityQueue[T]) GetPriority(item T) int {
@@ -82,19 +81,6 @@ func (q *PriorityQueue[T]) TryIncreasePriority(item T) bool {
 	panic("failed") //return false
 }
 
-func (q *PriorityQueue[T]) Print() {
-	fromCurrent, printNext := 2, 0
-	for i := 0; i < q.Size(); i++ {
-		fmt.Print(q.data.data[i].priority, q.data.data[i].item, ",\t")
-		if i == printNext {
-			fmt.Println()
-			printNext += fromCurrent
-			fromCurrent *= 2
-		}
-	}
-	fmt.Println()
-}
-
 func (q *PriorityQueue[T]) Add(item T) *PriorityQueue[T] {
 	if _, ok := q.members[item]; !ok {
 		qItem := &queueItem[T]{
@@ -104,10 +90,7 @@ func (q *PriorityQueue[T]) Add(item T) *PriorityQueue[T] {
 
 		q.members[item] = qItem
 
-		q.data.InsertKey(qItem)
-		if q.data.size < 72 {
-			fmt.Println("adding", *qItem)
-		}
+		heap.Push(q.data, qItem)
 	} else {
 		panic("didn't add to queue")
 	}

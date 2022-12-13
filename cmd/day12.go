@@ -76,6 +76,14 @@ func createAStarMap(end Coordinate, m [][]rune) [][]*aStarNode {
 	return heightMap
 }
 
+func resetAStar(heightMap [][]*aStarNode) {
+	for _, row := range heightMap {
+		for _, node := range row {
+			node.generatedScore = math.MaxInt
+		}
+	}
+}
+
 func heightClimbable(src, dst rune) bool {
 	return (dst - src) <= 1
 }
@@ -116,48 +124,26 @@ func runAStar(start, end Coordinate, heightMap [][]*aStarNode) {
 	processQueue.Add(startNode)
 
 	var current *aStarNode
-	afterEnd := false
-	i := 0
 	for current = processQueue.GetNext(); current != endNode; current = processQueue.GetNext() {
-
-		if i < 37 {
-			fmt.Println("cur pri", i, current.generatedScore+current.heuristicScore)
-			processQueue.Print()
-			i++
-		}
-
 		nextScore := current.generatedScore + 1
-		if afterEnd {
-			fmt.Println("current priority", current.generatedScore, current.heuristicScore, current.generatedScore+current.heuristicScore)
-		}
+
 		for _, neighbor := range getNeighbors(current.self, heightMap) {
 			if neighbor.generatedScore > nextScore {
 				neighbor.generatedScore = nextScore
 				neighbor.predecessor = current.self
 
 				if processQueue.Has(neighbor) {
-					if neighbor == endNode {
-						fmt.Println("end priority increase", neighbor.generatedScore, neighbor.heuristicScore, neighbor.generatedScore+neighbor.heuristicScore)
-					}
-					if !processQueue.TryIncreasePriority(neighbor) {
-						panic("what happened?")
-					}
+					processQueue.TryIncreasePriority(neighbor)
 				} else {
 					processQueue.Add(neighbor)
-					if neighbor == endNode {
-						fmt.Println("end added", processQueue.GetPriority(endNode), neighbor.generatedScore+neighbor.heuristicScore, current)
-						afterEnd = true
-						//processQueue.Print()
-					}
 				}
 			}
 		}
-		if i < 37 {
-			fmt.Println("cur pri", i, current.generatedScore+current.heuristicScore)
-			processQueue.Print()
+
+		if processQueue.Size() == 0 {
+			break
 		}
 	}
-	fmt.Println("final priority", current.generatedScore, current.heuristicScore, current.generatedScore+current.heuristicScore)
 }
 
 // day12Cmd represents the day12 command
@@ -181,12 +167,28 @@ var day12Cmd = &cobra.Command{
 
 				runAStar(start, end, heightMap)
 
-				fmt.Println(heightMap[end.y][end.x])
-				fmt.Printf("The fastest route to the end point will get there in **%d** steps.\n", heightMap[end.y][end.x].generatedScore)
+				fmt.Printf("The fastest route to the end point will get there in **%d** steps.\n",
+					heightMap[end.y][end.x].generatedScore)
 			}
 
 			if Parts.Has(2) {
 				fmt.Println("Part 2 running...")
+
+				min := math.MaxInt
+				for row := range input {
+					for col, val := range input[row] {
+						if val == 'a' {
+							resetAStar(heightMap)
+							runAStar(Coordinate{x: col, y: row}, end, heightMap)
+
+							if heightMap[end.y][end.x].generatedScore < min {
+								min = heightMap[end.y][end.x].generatedScore
+							}
+						}
+					}
+				}
+
+				fmt.Printf("The shortest hiking route is **%d** steps.\n", min)
 			}
 		}
 	},
