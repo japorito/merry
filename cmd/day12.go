@@ -8,31 +8,30 @@ import (
 	"math"
 	"time"
 
-	"github.com/japorito/merry/libxmas/stockings"
+	"github.com/japorito/merry/libxmas/rudolph"
 	"github.com/japorito/merry/libxmas/toybag"
 	"github.com/japorito/merry/libxmas/xmas"
 	"github.com/spf13/cobra"
 )
 
-type aStarNode struct {
-	value          rune
-	generatedScore int
-	heuristicScore int
-	predecessor    Coordinate
-	self           Coordinate
+type HeightMap rudolph.AStarMap[rune]
+
+func (hMap *HeightMap) Get(coords rudolph.Coordinate) *rudolph.MapNode[rune] {
+	return hMap.MapNodes[coords.Row][coords.Col]
 }
 
-func manhattanDistance(a, b Coordinate) int {
-	return abs(a.x-b.x) + abs(a.y-b.y)
+func (hMap *HeightMap) GetMap() [][]*rudolph.MapNode[rune] {
+	return hMap.MapNodes
 }
 
-func letterDistance(a rune, b rune) int {
-	return int(b - a)
+func (hMap *HeightMap) SetMap(m [][]*rudolph.MapNode[rune]) {
+	hMap.MapNodes = m
 }
 
-func heuristic(src, dst Coordinate, m [][]rune) int {
-	dManhattan := manhattanDistance(src, dst)
-	dLetter := letterDistance(m[src.y][src.x], m[dst.y][dst.x])
+func (hMap *HeightMap) Heuristic(src, dst rudolph.Coordinate) int {
+	dManhattan := rudolph.ManhattanDistance(src, dst)
+	dLetter := rudolph.DifferenceDistance(hMap.MapNodes[src.Row][src.Col].Value,
+		hMap.MapNodes[dst.Row][dst.Col].Value)
 
 	if dLetter > dManhattan {
 		return dLetter
@@ -41,110 +40,54 @@ func heuristic(src, dst Coordinate, m [][]rune) int {
 	return dManhattan
 }
 
-func findAndReplaceRune(r, repl rune, m [][]rune) Coordinate {
+func (hMap *HeightMap) TravelCost(src, dst rudolph.Coordinate) int {
+	return hMap.MapNodes[src.Row][src.Col].TravelScore + 1
+}
+
+func (hMap *HeightMap) GetConnectedNodes(src rudolph.Coordinate) []rudolph.Coordinate {
+	var neighbors []rudolph.Coordinate
+	selfNode := hMap.MapNodes[src.Row][src.Col]
+
+	if row := src.Row - 1; row >= 0 &&
+		heightClimbable(selfNode.Value, hMap.MapNodes[row][src.Col].Value) {
+		neighbors = append(neighbors, hMap.MapNodes[row][src.Col].Self)
+	}
+	if row := src.Row + 1; row < len(hMap.MapNodes) &&
+		heightClimbable(selfNode.Value, hMap.MapNodes[row][src.Col].Value) {
+		neighbors = append(neighbors, hMap.MapNodes[row][src.Col].Self)
+	}
+	if col := src.Col - 1; col >= 0 &&
+		heightClimbable(selfNode.Value, hMap.MapNodes[src.Row][col].Value) {
+		neighbors = append(neighbors, hMap.MapNodes[src.Row][col].Self)
+	}
+	if col := src.Col + 1; col < len(hMap.MapNodes[src.Row]) &&
+		heightClimbable(selfNode.Value, hMap.MapNodes[src.Row][col].Value) {
+		neighbors = append(neighbors, hMap.MapNodes[src.Row][col].Self)
+	}
+
+	return neighbors
+
+}
+
+func findAndReplaceRune(r, repl rune, m [][]rune) rudolph.Coordinate {
 	for i := range m {
 		for j := range m[i] {
 			if m[i][j] == r {
 				m[i][j] = repl
 
-				return Coordinate{
-					x: j,
-					y: i,
+				return rudolph.Coordinate{
+					Col: j,
+					Row: i,
 				}
 			}
 		}
 	}
 
-	return Coordinate{-1, -1}
-}
-
-func createAStarMap(end Coordinate, m [][]rune) [][]*aStarNode {
-	heightMap := make([][]*aStarNode, len(m))
-	for row := range m {
-		heightMap[row] = make([]*aStarNode, len(m[row]))
-		for col := range m[row] {
-			selfCoords := Coordinate{x: col, y: row}
-			heightMap[row][col] = &aStarNode{
-				value:          m[row][col],
-				generatedScore: math.MaxInt,
-				heuristicScore: heuristic(selfCoords, end, m),
-				self:           selfCoords,
-			}
-		}
-	}
-
-	return heightMap
-}
-
-func resetAStar(heightMap [][]*aStarNode) {
-	for _, row := range heightMap {
-		for _, node := range row {
-			node.generatedScore = math.MaxInt
-		}
-	}
+	return rudolph.Coordinate{-1, -1}
 }
 
 func heightClimbable(src, dst rune) bool {
 	return (dst - src) <= 1
-}
-
-func getNeighbors(self Coordinate, heightMap [][]*aStarNode) []*aStarNode {
-	var neighbors []*aStarNode
-	selfNode := heightMap[self.y][self.x]
-
-	if row := self.y - 1; row >= 0 &&
-		heightClimbable(selfNode.value, heightMap[row][self.x].value) {
-		neighbors = append(neighbors, heightMap[row][self.x])
-	}
-	if row := self.y + 1; row < len(heightMap) &&
-		heightClimbable(selfNode.value, heightMap[row][self.x].value) {
-		neighbors = append(neighbors, heightMap[row][self.x])
-	}
-	if col := self.x - 1; col >= 0 &&
-		heightClimbable(selfNode.value, heightMap[self.y][col].value) {
-		neighbors = append(neighbors, heightMap[self.y][col])
-	}
-	if col := self.x + 1; col < len(heightMap[self.y]) &&
-		heightClimbable(selfNode.value, heightMap[self.y][col].value) {
-		neighbors = append(neighbors, heightMap[self.y][col])
-	}
-
-	return neighbors
-}
-
-func runAStar(start, end Coordinate, heightMap [][]*aStarNode) {
-	startNode := heightMap[start.y][start.x]
-	startNode.generatedScore = 0
-
-	endNode := heightMap[end.y][end.x]
-
-	processQueue := stockings.NewMinPriorityQueue(32, func(item *aStarNode) int {
-		return item.generatedScore + item.heuristicScore
-	})
-	processQueue.Add(startNode)
-
-	var current *aStarNode
-	for current = processQueue.GetNext(); current != endNode; current = processQueue.GetNext() {
-		nextScore := current.generatedScore + 1
-
-		for _, neighbor := range getNeighbors(current.self, heightMap) {
-			if neighbor.generatedScore > nextScore {
-				neighbor.generatedScore = nextScore
-				neighbor.predecessor = current.self
-
-				if processQueue.Has(neighbor) {
-					processQueue.TryIncreasePriority(neighbor)
-				} else {
-					processQueue.Add(neighbor)
-				}
-			}
-		}
-
-		if processQueue.Size() == 0 {
-			// dead end! No routes from starting point
-			break
-		}
-	}
 }
 
 // day12Cmd represents the day12 command
@@ -161,15 +104,16 @@ var day12Cmd = &cobra.Command{
 			start := findAndReplaceRune('S', 'a', input)
 			end := findAndReplaceRune('E', 'z', input)
 
-			heightMap := createAStarMap(end, input)
+			var heightMap rudolph.IAStarMap[rune] = &HeightMap{}
+			rudolph.AStarInit(end, input, heightMap)
 
 			if Parts.Has(1) {
 				fmt.Println("Part 1 running...")
 
-				runAStar(start, end, heightMap)
+				rudolph.AStarRun(start, end, heightMap)
 
 				fmt.Printf("The fastest route to the end point will get there in **%d** steps.\n",
-					heightMap[end.y][end.x].generatedScore)
+					heightMap.Get(end).TravelScore)
 			}
 
 			if Parts.Has(2) {
@@ -179,11 +123,11 @@ var day12Cmd = &cobra.Command{
 				for row := range input {
 					for col, val := range input[row] {
 						if val == 'a' {
-							resetAStar(heightMap)
-							runAStar(Coordinate{x: col, y: row}, end, heightMap)
+							rudolph.AStarReset(heightMap)
+							rudolph.AStarRun(rudolph.Coordinate{Col: col, Row: row}, end, heightMap)
 
-							if heightMap[end.y][end.x].generatedScore < min {
-								min = heightMap[end.y][end.x].generatedScore
+							if endNode := heightMap.Get(end); endNode.TravelScore < min {
+								min = endNode.TravelScore
 							}
 						}
 					}
