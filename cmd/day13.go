@@ -64,11 +64,11 @@ func parsePacketList(packetData string) []string {
 }
 
 func compare(left, right string) int {
-	if left == "" && right == "" {
+	if leftEmpty, rightEmpty := left == "", right == ""; leftEmpty && rightEmpty {
 		return 0
-	} else if left == "" {
+	} else if leftEmpty {
 		return 1 // left ran out first
-	} else if right == "" {
+	} else if rightEmpty {
 		return -1 // right ran out first
 	}
 
@@ -113,10 +113,6 @@ func findCorrectIndices(input [][]string) int {
 		pairCompare := compare(pair[0], pair[1])
 		if pairCompare > 0 {
 			sum += (i + 1)
-		} else if pairCompare == 0 {
-			fmt.Printf("neutral comparison! %d\n", i+1)
-		} else {
-			fmt.Printf("rejected %d\n", i+1)
 		}
 	}
 
@@ -140,15 +136,12 @@ func findDecoderKey(input [][]string, dividers ...string) int {
 
 	sort.Sort(&packetList)
 
-	fmt.Println(packetList)
-
 	decoder := 1
-	for i, packet := range packetList {
-		for _, divider := range dividers {
-			if packet == divider {
-				decoder *= (i + 1)
-			}
-		}
+	for _, divider := range dividers {
+		dividerIdx := sort.Search(len(packetList), func(i int) bool {
+			return compare(packetList[i], divider) <= 0
+		})
+		decoder *= (dividerIdx + 1)
 	}
 
 	return decoder
