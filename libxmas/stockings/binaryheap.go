@@ -71,8 +71,6 @@ func (heap *BinaryHeap[T]) Has(key T) bool {
 func (h *BinaryHeap[T]) IncreaseKeyValue(key T) *BinaryHeap[T] {
 	if i := h.IndexOf(key); i >= 0 {
 		heap.Fix(h, i)
-	} else {
-		panic("what happened?")
 	}
 
 	return h

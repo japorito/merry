@@ -37,7 +37,7 @@ type PriorityQueue[T comparable] struct {
 }
 
 func (q *PriorityQueue[T]) GetNext() T {
-	next := heap.Pop(q.data).(*queueItem[T]) //q.data.Pop().(*queueItem[T]) //.ExtractTop()
+	next := heap.Pop(q.data).(*queueItem[T])
 
 	delete(q.members, next.item)
 
@@ -78,7 +78,7 @@ func (q *PriorityQueue[T]) TryIncreasePriority(item T) bool {
 		}
 	}
 
-	panic("failed") //return false
+	return false
 }
 
 func (q *PriorityQueue[T]) Add(item T) *PriorityQueue[T] {
@@ -91,8 +91,6 @@ func (q *PriorityQueue[T]) Add(item T) *PriorityQueue[T] {
 		q.members[item] = qItem
 
 		heap.Push(q.data, qItem)
-	} else {
-		panic("didn't add to queue")
 	}
 
 	return q

@@ -141,6 +141,7 @@ func runAStar(start, end Coordinate, heightMap [][]*aStarNode) {
 		}
 
 		if processQueue.Size() == 0 {
+			// dead end! No routes from starting point
 			break
 		}
 	}
