@@ -83,7 +83,7 @@ func findAndReplaceRune(r, repl rune, m [][]rune) rudolph.Coordinate {
 		}
 	}
 
-	return rudolph.Coordinate{-1, -1}
+	return rudolph.ErrorCoordinate
 }
 
 func heightClimbable(src, dst rune) bool {

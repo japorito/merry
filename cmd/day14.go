@@ -134,21 +134,21 @@ func (cave *caveMap) Drop(dropC rudolph.Coordinate) bool {
 }
 
 func findCaveDimensions(lines [][2]rudolph.Coordinate, points ...rudolph.Coordinate) (bottomleft, topright rudolph.Coordinate) {
-	minCol, minRow := math.MaxInt, math.MaxInt
-	maxCol, maxRow := math.MinInt, math.MinInt
+	min := rudolph.Coordinate{Row: math.MaxInt, Col: math.MaxInt}
+	max := rudolph.Coordinate{Row: math.MinInt, Col: math.MinInt}
 
 	updateMinMax := func(rock rudolph.Coordinate) {
-		if rock.Col < minCol {
-			minCol = rock.Col
+		if rock.Col < min.Col {
+			min.Col = rock.Col
 		}
-		if rock.Col > maxCol {
-			maxCol = rock.Col
+		if rock.Col > max.Col {
+			max.Col = rock.Col
 		}
-		if rock.Row < minRow {
-			minRow = rock.Row
+		if rock.Row < min.Row {
+			min.Row = rock.Row
 		}
-		if rock.Row > maxRow {
-			maxRow = rock.Row
+		if rock.Row > max.Row {
+			max.Row = rock.Row
 		}
 	}
 
@@ -161,8 +161,7 @@ func findCaveDimensions(lines [][2]rudolph.Coordinate, points ...rudolph.Coordin
 		updateMinMax(point)
 	}
 
-	return rudolph.Coordinate{Row: minRow, Col: minCol},
-		rudolph.Coordinate{Row: maxRow, Col: maxCol}
+	return min, max
 }
 
 func parseRockLines(input [][]string) [][2]rudolph.Coordinate {
