@@ -6,10 +6,6 @@ import (
 	"github.com/japorito/merry/libxmas/stockings"
 )
 
-type Coordinate struct {
-	Col, Row int
-}
-
 type MapNode[T any] struct {
 	Value          T
 	TravelScore    int
