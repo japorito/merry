@@ -25,6 +25,9 @@ type BitSet[T Integral] struct {
 }
 
 func (bs *BitSet[T]) blockNumFromIndex(idx T) int64 {
+	if idx < bs.leftMostIdx {
+		return (int64(idx-bs.leftMostIdx) - bitsetBlockSize) - 1
+	}
 	return int64(idx-bs.leftMostIdx) / bitsetBlockSize
 }
 
@@ -127,11 +130,14 @@ func (bs *BitSet[T]) Off(idx T) *BitSet[T] {
 
 func (bs *BitSet[T]) Has(idx T) bool {
 	block := bs.blockNumFromIndex(idx)
-	bitmask := uint64(1 << bs.blockOffsetFromIndex(idx))
 
-	return block < bs.capacity &&
-		block >= 0 &&
-		(bs.data[block]&bitmask > 0)
+	if block >= 0 && block < bs.capacity {
+		bitmask := uint64(1 << bs.blockOffsetFromIndex(idx))
+
+		return (bs.data[block]&bitmask > 0)
+	}
+
+	return false
 }
 
 func (bs *BitSet[T]) Intersect(others ...BitSet[T]) BitSet[T] {
