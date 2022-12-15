@@ -23,6 +23,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var Parts stockings.BitSet[int]
+var part string
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "merry",
@@ -31,9 +34,17 @@ var rootCmd = &cobra.Command{
 	
 Planned use will look something like:
 merry day1 [--part=1] /path/to/input`,
-}
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		allParts := (part == "*")
+		if allParts || part == "1" {
+			Parts.On(1)
+		}
 
-var Parts stockings.BitSet[int]
+		if allParts || part == "2" {
+			Parts.On(2)
+		}
+	},
+}
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -45,16 +56,5 @@ func Execute() {
 }
 
 func init() {
-	var part string
-
 	rootCmd.PersistentFlags().StringVarP(&part, "Part", "p", "*", "Which puzzle part to run.")
-
-	allParts := (part == "*")
-	if allParts || part == "1" {
-		Parts.On(1)
-	}
-
-	if allParts || part == "2" {
-		Parts.On(2)
-	}
 }

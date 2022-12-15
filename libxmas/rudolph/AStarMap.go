@@ -40,7 +40,7 @@ func abs(num int) int {
 }
 
 func ManhattanDistance(a, b Coordinate) int {
-	return abs(a.Col-b.Col) + abs(a.Col-b.Col)
+	return abs(a.Col-b.Col) + abs(a.Row-b.Row)
 }
 
 func DifferenceDistance[T stockings.Integral](a T, b T) int {

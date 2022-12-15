@@ -1,6 +1,7 @@
 package rudolph
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -12,6 +13,10 @@ type Coordinate struct {
 
 func (c *Coordinate) Equals(other Coordinate) bool {
 	return c.Col == other.Col && c.Row == other.Row
+}
+
+func (c *Coordinate) String() string {
+	return fmt.Sprintf("%d,%d", c.Col, c.Row)
 }
 
 var ErrorCoordinate = Coordinate{math.MinInt, math.MinInt}
