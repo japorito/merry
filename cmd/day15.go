@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -69,29 +70,47 @@ func findEmergencyBeacon(sensorData []coordinatePair, min, max rudolph.Coordinat
 }
 
 func countExcludedZones(sensorData []coordinatePair, line int) int {
-	exclusions := make(map[int]bool)
+	minx, maxx := math.MaxInt, math.MinInt
 	for _, pair := range sensorData {
-		dBeacon := rudolph.ManhattanDistance(pair.sensor, pair.beacon)
-
-		nearestPtOnLine := rudolph.Coordinate{Row: line, Col: pair.sensor.Col}
-		dLine := rudolph.ManhattanDistance(pair.sensor, nearestPtOnLine)
-
-		if dLine <= dBeacon {
-			availableD := dBeacon - dLine
-			for i := nearestPtOnLine.Col - availableD; i <= nearestPtOnLine.Col+availableD; i++ {
-				exclusions[i] = true
+		rowDist := abs(pair.sensor.Row - line)
+		if rowDist <= pair.distance {
+			colDist := pair.distance - rowDist
+			if leftcol := pair.sensor.Col - colDist; leftcol < minx {
+				minx = leftcol
+			}
+			if rightcol := pair.sensor.Col + colDist; rightcol > maxx {
+				maxx = rightcol
 			}
 		}
 	}
 
-	// remove existing beacons
-	for _, pair := range sensorData {
-		if pair.beacon.Row == line {
-			delete(exclusions, pair.beacon.Col)
+	count := 0
+	for i := minx; i <= maxx; i++ {
+		count++
+		for _, pair := range sensorData {
+			pt := rudolph.Coordinate{Row: line, Col: i}
+			dPt := rudolph.ManhattanDistance(pt, pair.sensor)
+
+			if dPt <= pair.distance {
+				// skip all columns eliminated by this sensor
+				i_new := pair.sensor.Col + (pair.distance - abs(pair.sensor.Row-line))
+				count += (i_new - i)
+				i = i_new
+				break
+			}
 		}
 	}
 
-	return len(exclusions)
+	beacons := make(map[int]bool)
+	// remove existing beacons
+	for _, pair := range sensorData {
+		if _, ok := beacons[pair.beacon.Col]; !ok && pair.beacon.Row == line {
+			beacons[pair.beacon.Col] = true
+			count--
+		}
+	}
+
+	return count
 }
 
 // day15Cmd represents the day15 command
